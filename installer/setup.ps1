@@ -66,17 +66,23 @@ function AskFirstRun {
   Write-Host "  Optional AI for tone, translation and explanations:"
   if (-not (OllamaExe)) { Write-Host "  - Ollama, the local AI runtime                            (about 1.5 GB)" }
   Write-Host "  - a language model: qwen3.5:4b (about 3.4 GB) or gpt-oss:20b on strong computers (about 14 GB)"
+  Write-Host "  Or use Ollama Cloud with your API key: nothing is downloaded, but sentences and rule texts are sent to ollama.com."
   Write-Host "  Free disk space here: $disk GB - memory: $ram GB"
   if ($disk -ge 0 -and $disk -lt 2) { Fail "there is less than 2 GB of free disk space." "Free some disk space, then start again." }
   if ($disk -ge 0 -and $disk -lt 20) { Write-Host "  Warning: under 20 GB free. Choose 'Template mode only' unless you can free space." -ForegroundColor Yellow }
   if ($ram -ge 0 -and $ram -lt 8) { Write-Host "  Warning: under 8 GB of memory. The AI would be slow. Template mode is recommended." -ForegroundColor Yellow }
   Write-Host ""
-  Write-Host "  [1] Install with AI     [2] Template mode only (works fully without AI)     [Q] Quit"
-  $a = Read-Host "Your choice [1/2/Q]"
+  Write-Host "  [1] Install with AI     [2] Template mode only (works fully without AI)"
+  Write-Host "  [3] Use Ollama Cloud with an API key (no model download)     [Q] Quit"
+  $def = "2"
+  $defFile = Join-Path $Root "installer\default_choice.txt"
+  if (Test-Path $defFile) { $d = (Get-Content $defFile -Raw).Trim(); if ($d -match "^[123]$") { $def = $d } }
+  $a = Read-Host "Your choice [1/2/3/Q] (Enter = $def)"
+  if ($a -eq "") { $a = $def }
   switch ($a) {
     "1" { $c = "ai" }
     "2" { $c = "template" }
-    "" { $c = "template" }
+    "3" { $c = "cloud" }
     default { Write-Host "Nothing was installed."; exit 0 }
   }
   Set-Content -Path $ChoiceFile -Value $c -Encoding ASCII
@@ -158,12 +164,46 @@ function PullModel {
   return $true
 }
 
+function SetupCloud {
+  # Ollama Cloud: no Ollama install and no download. The key goes to Python on stdin, never as an argument or to the log.
+  $keyFile = Join-Path $UserData "ollama_api_key.txt"
+  Push-Location $Root
+  try {
+    if ($env:OLLAMA_API_KEY) { "" | & $Py -m app.cli set-cloud *>> $Log }
+    elseif (Test-Path $keyFile) { Get-Content $keyFile -Raw | & $Py -m app.cli set-cloud *>> $Log }
+    else {
+      Write-Host "Create a key at https://ollama.com/settings/keys (sign in first)."
+      $secure = Read-Host "Paste your Ollama API key (input is hidden), then press Enter" -AsSecureString
+      $bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
+      $plain = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr)
+      [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr)
+      $plain | & $Py -m app.cli set-cloud *>> $Log
+      $ok = ($LASTEXITCODE -eq 0)
+      $plain = $null
+      if (-not $ok) {
+        Say "That does not look like an Ollama API key. ClaimComposer will run in template mode."
+        Write-Host "You can add the key later in Settings > AI."
+        & $Py -m app.cli set-ai off *>> $Log
+        return
+      }
+    }
+    Say "Checking Ollama Cloud ..."
+    & $Py -m app.cli verify-model *>> $Log
+    if ($LASTEXITCODE -eq 0) { Say "Ollama Cloud works. Sentences and rule texts will be sent to ollama.com when the AI is used." }
+    else {
+      Say "Ollama Cloud did not answer correctly (wrong key, model not offered, or no internet)."
+      Write-Host "ClaimComposer still works fully in template mode. Fix the key or model in Settings > AI."
+    }
+  } finally { Pop-Location }
+}
+
 function Setup {
   Log "---- setup started in $Root ($([Environment]::OSVersion.VersionString))"
   $choice = AskFirstRun
   InstallUv
   InstallPython
   SyncEnv
+  if ($choice -eq "cloud") { SetupCloud; Log "setup finished"; return }
   Push-Location $Root
   if ($choice -ne "ai") { & $Py -m app.cli set-ai off *>> $Log; Pop-Location; return }
   Pop-Location

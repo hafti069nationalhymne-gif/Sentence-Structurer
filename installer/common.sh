@@ -63,6 +63,7 @@ ask_first_run() {
   say "  Optional AI for tone, translation and explanations:"
   have_ollama || say "  - Ollama, the local AI runtime                      (about 1.5 GB)"
   say "  - a language model: qwen3.5:4b (about 3.4 GB) or gpt-oss:20b on strong computers (about 14 GB)"
+  say "  Or use Ollama Cloud with your API key: nothing is downloaded, but sentences and rule texts are sent to ollama.com."
   say "  Free disk space here: ${disk:-?} GB · memory: ${ram:-?} GB"
   if [ -n "${disk:-}" ] && [ "$disk" -lt 2 ]; then
     fail "there is less than 2 GB of free disk space." "free some disk space, then start again."
@@ -70,12 +71,17 @@ ask_first_run() {
   if [ -n "${disk:-}" ] && [ "$disk" -lt 20 ]; then say "  Warning: under 20 GB free. Choose 'Template mode only' unless you can free space."; fi
   if [ -n "${ram:-}" ] && [ "$ram" -lt 8 ]; then say "  Warning: under 8 GB of memory. The AI would be slow. Template mode is recommended."; fi
   say ""
-  say "  [1] Install with AI      [2] Template mode only (works fully without AI)      [Q] Quit"
-  local ans=""
-  if [ -t 0 ]; then read -r -p "Your choice [1/2/Q]: " ans || ans="2"; else ans="${CC_DEFAULT_CHOICE:-2}"; fi
+  say "  [1] Install with AI      [2] Template mode only (works fully without AI)"
+  say "  [3] Use Ollama Cloud with an API key (no model download)      [Q] Quit"
+  local ans="" def="2"
+  [ -f "$CC_ROOT/installer/default_choice.txt" ] && def="$(tr -dc '123' < "$CC_ROOT/installer/default_choice.txt" | head -c 1)"
+  [ -n "$def" ] || def="2"
+  if [ -t 0 ]; then read -r -p "Your choice [1/2/3/Q] (Enter = $def): " ans || ans="$def"; else ans="${CC_DEFAULT_CHOICE:-$def}"; fi
+  [ -n "$ans" ] || ans="$def"
   case "$ans" in
     1) CC_CHOICE="ai" ;;
-    2|"") CC_CHOICE="template" ;;
+    2) CC_CHOICE="template" ;;
+    3) CC_CHOICE="cloud" ;;
     *) say "Nothing was installed."; exit 0 ;;
   esac
   echo "$CC_CHOICE" > "$CC_CHOICE_FILE"
@@ -150,7 +156,38 @@ pull_model() {
   fi
 }
 
+setup_cloud() {
+  # Ollama Cloud: no Ollama install and no download. The key is passed on stdin, never as an argument or to the log.
+  local py="$CC_ROOT/.venv/bin/python" keyfile="$CC_USERDATA/ollama_api_key.txt" key=""
+  if [ -n "${OLLAMA_API_KEY:-}" ]; then
+    (cd "$CC_ROOT" && "$py" -m app.cli set-cloud < /dev/null >> "$CC_LOG" 2>&1)
+  elif [ -f "$keyfile" ]; then
+    (cd "$CC_ROOT" && "$py" -m app.cli set-cloud < "$keyfile" >> "$CC_LOG" 2>&1)
+  else
+    if [ ! -t 0 ]; then say "No Ollama Cloud API key was given. ClaimComposer will run in template mode."; \
+      (cd "$CC_ROOT" && "$py" -m app.cli set-ai off >> "$CC_LOG" 2>&1); return; fi
+    say "Create a key at https://ollama.com/settings/keys (sign in first)."
+    read -r -s -p "Paste your Ollama API key (input is hidden), then press Enter: " key; echo
+    if ! printf '%s\n' "$key" | (cd "$CC_ROOT" && "$py" -m app.cli set-cloud >> "$CC_LOG" 2>&1); then
+      key=""
+      say "That does not look like an Ollama API key. ClaimComposer will run in template mode."
+      say "You can add the key later in Settings > AI."
+      (cd "$CC_ROOT" && "$py" -m app.cli set-ai off >> "$CC_LOG" 2>&1); return
+    fi
+    key=""
+  fi
+  say "Checking Ollama Cloud ..."
+  if (cd "$CC_ROOT" && "$py" -m app.cli verify-model >> "$CC_LOG" 2>&1); then
+    say "Ollama Cloud works. Sentences and rule texts will be sent to ollama.com when the AI is used."
+  else
+    say "Ollama Cloud did not answer correctly (wrong key, model not offered, or no internet)."
+    say "ClaimComposer still works fully in template mode. Fix the key or model in Settings > AI, or remove"
+    say "userdata/setup_choice.txt and start again."
+  fi
+}
+
 setup_ai() {
+  if [ "${CC_CHOICE:-template}" = "cloud" ]; then setup_cloud; return; fi
   if [ "${CC_CHOICE:-template}" != "ai" ]; then
     (cd "$CC_ROOT" && "$CC_ROOT/.venv/bin/python" -m app.cli set-ai off >> "$CC_LOG" 2>&1); return; fi
   if ! install_ollama; then say "Ollama could not be installed. ClaimComposer will run in template mode."; return; fi

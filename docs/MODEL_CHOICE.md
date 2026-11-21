@@ -39,3 +39,18 @@ fallback, invalid citations, English "translations", Ollama missing and model mi
 
 If `qwen3.5:4b` turns out not to exist on the day of installation, set another small model with JSON Schema support
 (for example a current Qwen or Llama tag) in Settings; the checks and fallbacks stay the same.
+
+## Ollama Cloud mode (no download)
+
+Set `source = "cloud"` in `config.toml`, choose option 3 in the launcher, or switch in Settings > AI.
+Calls go to `https://ollama.com/api/chat` with `Authorization: Bearer <key>`; the URL is fixed in code so the key can
+only ever be sent to Ollama Cloud. The key comes from `userdata/ollama_api_key.txt` (written with permissions 600) or
+the `OLLAMA_API_KEY` environment variable, and it is never returned by the API, written to `settings.json`, exported
+or included in a release zip.
+
+**Default cloud model: `gpt-oss:20b`.** Checked against the live Ollama Cloud model list on 21 November 2026: the
+list contained `gpt-oss:20b` and `gpt-oss:120b`, but not `qwen3.5:4b`, so the local default is not used in the
+cloud. The chat and JSON Schema test could not be completed: the account used for the check answered every chat
+call with `402 Payment Required` ("Add usage credits or subscribe"). The app handles this case: it shows the
+reason, stops calling the AI for that ticket and returns the template results. Once the account has credits,
+`uv run python -m app.cli verify-model` runs the JSON Schema test.

@@ -79,12 +79,28 @@
     </div>
     <form class="settings" id="settings-form">
       <fieldset>
-        <legend>Local AI (optional)</legend>
-        <label class="check"><input type="checkbox" name="ollama_enabled"> Use the local AI for tone, translation and explanations</label>
-        <label class="field">Model
+        <legend>AI (optional)</legend>
+        <label class="check"><input type="checkbox" name="ollama_enabled"> Use AI for tone, translation and explanations</label>
+        <div class="row" role="radiogroup" aria-label="Where the AI runs">
+          <label class="check"><input type="radio" name="ai_source" value="local"> On this computer (Ollama)</label>
+          <label class="check"><input type="radio" name="ai_source" value="cloud"> Ollama Cloud (API key, no download)</label>
+        </div>
+        <label class="field" id="field-local-model">Local model
           <input type="text" name="chat_model" pattern="[A-Za-z0-9._:/\-]+" maxlength="64" list="model-list" autocomplete="off">
-          <datalist id="model-list"></datalist>
         </label>
+        <label class="field" id="field-cloud-model">Cloud model
+          <input type="text" name="cloud_model" pattern="[A-Za-z0-9._:/\-]+" maxlength="64" list="model-list" autocomplete="off">
+        </label>
+        <datalist id="model-list"></datalist>
+        <div class="field" id="field-key">Ollama Cloud API key
+          <div class="row">
+            <input type="password" id="api-key" autocomplete="off" spellcheck="false" maxlength="200" placeholder="Paste a new key" aria-describedby="key-state">
+            <button type="button" class="btn btn--small" id="btn-key-save">Save key</button>
+            <button type="button" class="btn btn--small" id="btn-key-remove">Remove key</button>
+          </div>
+          <span class="hint" id="key-state" role="status"></span>
+        </div>
+        <p class="hint" id="cloud-note">With Ollama Cloud, the sentences and the rule texts are sent to ollama.com. Reviewer comments and your other answers are never sent. The key is stored only on this computer.</p>
         <p class="hint" id="ai-hint"></p>
       </fieldset>
       <fieldset>

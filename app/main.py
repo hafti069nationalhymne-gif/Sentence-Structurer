@@ -16,13 +16,13 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Response
 from fastapi.staticfiles import StaticFiles
 
-from .config import BIND_HOST, LOG_DIR, STATIC_DIR, USERDATA_DIR, load_settings, save_settings
+from .config import BIND_HOST, LOG_DIR, STATIC_DIR, USERDATA_DIR, load_api_key, load_settings, save_api_key, save_settings
 from .engine.context import AnswerError, segment_options
 from .engine.evidence import sources_for_rule
 from .engine.recommend import adjust_one, recommend, revalidate, route_summary
 from .knowledge import get_knowledge
 from .library import get_library
-from .ollama_client import OllamaClient
+from .ollama_client import OllamaClient, make_client
 from .schemas import (
     ClearRequest, EventRequest, RecommendRequest, RevalidateRequest, ReviewRequest, SettingsUpdate, SusRequest,
     UsabilityRequest,
@@ -40,8 +40,7 @@ def create_app(userdata: Path | None = None, ollama_transport=None) -> FastAPI:
     store = Store(userdata / "claimcomposer.sqlite")
 
     def client() -> OllamaClient:
-        s = state["settings"]
-        return OllamaClient(s.ollama_url, s.ollama_timeout_s, transport=ollama_transport)
+        return make_client(state["settings"], userdata, transport=ollama_transport)
 
     app = FastAPI(title="ClaimComposer", docs_url=None, redoc_url=None, openapi_url=None)
 
@@ -54,7 +53,7 @@ def create_app(userdata: Path | None = None, ollama_transport=None) -> FastAPI:
         resp = await call_next(request)
         resp.headers["Content-Security-Policy"] = (
             "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; font-src 'self'; "
-            "connect-src 'self'; frame-ancestors 'none'")
+            "connect-src 'self'; frame-ancestors 'none'")  # the browser never talks to ollama.com; the server does
         resp.headers["X-Content-Type-Options"] = "nosniff"
         resp.headers["Referrer-Policy"] = "no-referrer"
         return resp
@@ -112,23 +111,31 @@ def create_app(userdata: Path | None = None, ollama_transport=None) -> FastAPI:
     @app.get("/api/status")
     def status():
         s = state["settings"]
-        st = client().status(s.chat_model) if s.ollama_enabled else None
+        st = client().status(s.active_model) if s.ollama_enabled else None
         mode = "ai" if (st and st.available and st.model_present) else "template"
         if not s.ollama_enabled:
             msg = "AI is switched off. Template mode."
         else:
             msg = st.message
         return {"mode": mode, "message": msg, "ollama": st.as_dict() if st else None, "settings": s.public(),
+                "ai_source": s.ai_source, "api_key_set": bool(load_api_key(userdata)),
                 "library_hash": lib.library_hash, "knowledge_hash": kb.knowledge_hash,
                 "templates": len(lib.templates), "bind_host": BIND_HOST}
 
     @app.post("/api/settings")
     def update_settings(body: SettingsUpdate):
         s = state["settings"]
-        for k, v in body.model_dump(exclude_none=True).items():
+        patch = body.model_dump(exclude_none=True)
+        key = patch.pop("api_key", None)
+        if key is not None:
+            try:
+                save_api_key(key, userdata)  # write-only: the key is never returned
+            except ValueError as e:
+                raise HTTPException(422, str(e))
+        for k, v in patch.items():
             setattr(s, k, v)
         save_settings(s, userdata)
-        return s.public()
+        return {**s.public(), "api_key_set": bool(load_api_key(userdata))}
 
     # ---- history, review, usability ---------------------------------------------------
     @app.get("/api/history")

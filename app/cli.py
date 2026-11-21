@@ -4,7 +4,9 @@
     python -m app.cli choose-model    # prints the model to use for this hardware
     python -m app.cli set-model NAME  # stores the model in userdata/settings.json
     python -m app.cli set-ai on|off   # switches the optional AI on or off
-    python -m app.cli verify-model [NAME]  # JSON Schema test against the local Ollama (exit 1 if it fails)
+    python -m app.cli verify-model [NAME]  # JSON Schema test against the configured Ollama (exit 1 if it fails)
+    python -m app.cli set-cloud       # reads an Ollama Cloud API key from stdin (or OLLAMA_API_KEY) and switches to the cloud
+    python -m app.cli set-local       # switches back to a local Ollama
     python -m app.cli check           # loads the knowledge base and library (exit 1 on error)
 """
 from __future__ import annotations
@@ -16,7 +18,7 @@ import shutil
 import subprocess
 import sys
 
-from .config import USERDATA_DIR, load_settings, save_settings
+from .config import USERDATA_DIR, load_settings, save_api_key, save_settings
 
 LARGE, SMALL = "gpt-oss:20b", "qwen3.5:4b"
 
@@ -80,21 +82,45 @@ def main(argv: list[str]) -> int:
     if cmd in ("set-model", "set-ai"):
         s = load_settings()
         if cmd == "set-model":
-            s.chat_model = argv[2]
+            if s.cloud:
+                s.cloud_model = argv[2]
+            else:
+                s.chat_model = argv[2]
         else:
             s.ollama_enabled = argv[2] == "on"
         save_settings(s, USERDATA_DIR)
         print("ok")
         return 0
+    if cmd == "set-cloud":
+        # The key comes from stdin or the environment, never from the command line (it would show in process lists).
+        key = os.environ.get("OLLAMA_API_KEY", "").strip() or sys.stdin.readline().strip()
+        try:
+            save_api_key(key, USERDATA_DIR)
+        except ValueError as e:
+            print(f"FAIL: {e}")
+            return 1
+        s = load_settings()
+        s.ai_source, s.ollama_enabled = "cloud", True
+        save_settings(s, USERDATA_DIR)
+        print(f"ok: Ollama Cloud with model {s.cloud_model}")
+        return 0
+    if cmd == "set-local":
+        s = load_settings()
+        s.ai_source = "local"
+        save_settings(s, USERDATA_DIR)
+        print("ok")
+        return 0
     if cmd == "verify-model":
-        from .ollama_client import OllamaClient, OllamaError
+        from .ollama_client import OllamaError, make_client
 
         s = load_settings()
-        model = argv[2] if len(argv) > 2 else s.chat_model
+        model = argv[2] if len(argv) > 2 else s.active_model
         schema = {"type": "object", "properties": {"sentence": {"type": "string"}, "count": {"type": "integer"}},
                   "required": ["sentence", "count"]}
         try:
-            out = OllamaClient(s.ollama_url, 300).chat_json(
+            client = make_client(s)
+            client.timeout = 300
+            out = client.chat_json(
                 model, "Answer with JSON only.",
                 'Return {"sentence": "The cap is not included.", "count": 3} exactly.', schema)
         except OllamaError as e:

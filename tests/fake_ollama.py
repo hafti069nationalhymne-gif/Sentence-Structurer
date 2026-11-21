@@ -15,11 +15,14 @@ def data_block(text: str) -> str:
 class FakeOllama:
     """Run with `with FakeOllama(responder) as f: f.url`. `responder(kind, user_prompt, body) -> dict`."""
 
-    def __init__(self, responder=None, models=("qwen3.5:4b",), version="0.12.0"):
+    def __init__(self, responder=None, models=("qwen3.5:4b",), version="0.12.0", api_key=None):
+        """With api_key set it behaves like Ollama Cloud: Bearer auth required, no /api/version."""
         self.responder = responder or echo_responder
         self.models = list(models)
         self.version = version
+        self.api_key = api_key
         self.calls: list[dict] = []
+        self.auth_headers: list[str | None] = []
         fake = self
 
         class H(BaseHTTPRequestHandler):
@@ -34,8 +37,21 @@ class FakeOllama:
                 self.end_headers()
                 self.wfile.write(b)
 
+            def _authorised(self):
+                fake.auth_headers.append(self.headers.get("Authorization"))
+                if fake.api_key is None:
+                    return True
+                if self.headers.get("Authorization") != f"Bearer {fake.api_key}":
+                    self._json(401, {"error": "unauthorized"})
+                    return False
+                return True
+
             def do_GET(self):
+                if not self._authorised():
+                    return
                 if self.path == "/api/version":
+                    if fake.api_key is not None:
+                        return self._json(404, {"error": "not found"})
                     return self._json(200, {"version": fake.version})
                 if self.path == "/api/tags":
                     return self._json(200, {"models": [{"name": m} for m in fake.models]})
@@ -44,6 +60,8 @@ class FakeOllama:
             def do_POST(self):
                 n = int(self.headers.get("Content-Length", 0))
                 body = json.loads(self.rfile.read(n) or b"{}")
+                if not self._authorised():
+                    return
                 if self.path == "/api/pull":
                     fake.models.append(body.get("model"))
                     return self._json(200, {"status": "success"})

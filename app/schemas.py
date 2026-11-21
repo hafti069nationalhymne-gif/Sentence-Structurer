@@ -76,6 +76,9 @@ class SettingsUpdate(BaseModel):
     chat_model: Optional[str] = Field(default=None, max_length=64, pattern=r"^[A-Za-z0-9._:/-]+$")
     review_mode: Optional[bool] = None
     usability_mode: Optional[bool] = None
+    ai_source: Optional[Literal["local", "cloud"]] = None
+    cloud_model: Optional[str] = Field(default=None, max_length=64, pattern=r"^[A-Za-z0-9._:/-]+$")
+    api_key: Optional[str] = Field(default=None, max_length=200)  # write-only; "" removes the stored key
 
 
 class ClearRequest(BaseModel):

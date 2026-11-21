@@ -135,11 +135,11 @@ def fill_german(templates_path: Path, lib) -> int:
     if not missing:
         return 0
     settings = load_settings()
-    from app.ollama_client import OllamaClient, OllamaError
+    from app.ollama_client import make_client
     from app.engine.ai import translate_checked
 
-    client = OllamaClient(settings.ollama_url, settings.ollama_timeout_s)
-    st = client.status(settings.chat_model)
+    client = make_client(settings)
+    st = client.status(settings.active_model)
     if not (st.available and st.model_present):
         print(f"German drafts: {len(missing)} templates have no German text and no local model is available ({st.message}).")
         return 0
@@ -149,12 +149,12 @@ def fill_german(templates_path: Path, lib) -> int:
         if row.get("text_de"):
             continue
         t = lib.templates[row["template_id"]]
-        de = translate_checked(client, settings.chat_model, t.text_en, t)
+        de = translate_checked(client, settings.active_model, t.text_en, t)
         if de:
             row["text_de"], row["de_reviewed"] = de, False
             done += 1
     templates_path.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), encoding="utf-8")
-    print(f"German drafts: translated {done} of {len(missing)} with {settings.chat_model}")
+    print(f"German drafts: translated {done} of {len(missing)} with {settings.active_model}")
     return done
 
 

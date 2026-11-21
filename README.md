@@ -6,8 +6,8 @@ fits, the facts you must check first, and the phrases you should not use.
 
 > Research prototype. Not legal advice. Human review required.
 
-Everything runs on your own computer. There is no account, cloud service or tracking. After the first start it works
-offline.
+Everything runs on your own computer. There is no account or tracking, and after the first start it works offline,
+unless you choose the optional Ollama Cloud mode described below.
 
 ## Start it
 
@@ -22,6 +22,17 @@ The first time, a window lists what it will download and asks once:
 - **Install with AI**: also installs Ollama and a small language model (a few GB). The AI only rewrites the tone,
   translates and writes short explanations. Every AI answer is checked and thrown away if it fails.
 - **Template mode only**: nothing extra. All recommendations work fully without AI.
+
+- **Use Ollama Cloud with an API key**: nothing is downloaded. Paste your key from
+  [ollama.com/settings/keys](https://ollama.com/settings/keys) when asked (the input is hidden). The key is stored
+  only on your computer in `userdata/ollama_api_key.txt` and is never shown again. In this mode the sentences and the
+  rule texts are sent to ollama.com; reviewer comments and your other answers never leave the computer. Your Ollama
+  account needs usage credits or a plan ([ollama.com/plans](https://ollama.com/plans)); without them the app says so
+  and continues in template mode.
+
+You can switch between the three later in **Settings > AI** (local model, cloud model, save or remove the key).
+For a copy with the cloud option preselected, build `dist/ClaimComposer-cloud.zip` with
+`uv run python scripts/build_release.py --cloud` (it contains no key).
 
 Then the app opens in its own window. **Keep the black launcher window open while you work; closing it stops the app.**
 If setup is interrupted, double-click again and it continues where it stopped. If something fails, the window says what

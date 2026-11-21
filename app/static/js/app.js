@@ -45,7 +45,7 @@ async function refreshStatus() {
     state.settings = s.settings;
     const pill = $("#mode-pill");
     pill.dataset.mode = s.mode;
-    pill.textContent = s.mode === "ai" ? `AI · ${s.settings.chat_model}` : "Template mode";
+    pill.textContent = s.mode === "ai" ? `AI · ${s.ai_source === "cloud" ? "cloud · " : ""}${s.settings.active_model}` : "Template mode";
     pill.title = s.message;
     $("#ai-hint").textContent = s.message;
     $("#hashes").textContent = `Library ${s.library_hash} · Knowledge ${s.knowledge_hash} · ${s.templates} templates · bound to ${s.bind_host}`;
@@ -54,6 +54,14 @@ async function refreshStatus() {
     const f = $("#settings-form");
     f.ollama_enabled.checked = s.settings.ollama_enabled;
     f.chat_model.value = s.settings.chat_model;
+    f.cloud_model.value = s.settings.cloud_model;
+    for (const r of f.querySelectorAll('input[name="ai_source"]')) r.checked = r.value === s.ai_source;
+    const cloud = s.ai_source === "cloud";
+    $("#field-local-model").hidden = cloud;
+    $("#field-cloud-model").hidden = !cloud;
+    $("#field-key").hidden = !cloud;
+    $("#cloud-note").hidden = !cloud;
+    $("#key-state").textContent = s.api_key_set ? "A key is stored on this computer." : "No key stored yet.";
     f.review_mode.checked = s.settings.review_mode;
     f.usability_mode.checked = s.settings.usability_mode;
     $("#btn-sus").hidden = !s.settings.usability_mode;
@@ -177,10 +185,12 @@ function wire() {
   const f = $("#settings-form");
   f.addEventListener("change", async (e) => {
     const patch = {};
-    if (e.target.name === "chat_model") {
+    if (e.target.id === "api-key") return;  // saved only with the button
+    if (e.target.name === "chat_model" || e.target.name === "cloud_model") {
       if (!e.target.checkValidity()) { toast("Model names use letters, digits and . : / - only."); return; }
-      patch.chat_model = e.target.value;
-    } else if (e.target.type === "checkbox") patch[e.target.name] = e.target.checked;
+      patch[e.target.name] = e.target.value;
+    } else if (e.target.name === "ai_source") patch.ai_source = e.target.value;
+    else if (e.target.type === "checkbox") patch[e.target.name] = e.target.checked;
     else return;
     try {
       await api.settings(patch);
@@ -190,6 +200,16 @@ function wire() {
     } catch (err) { toast(err.message); }
   });
   f.addEventListener("submit", (e) => e.preventDefault());
+  const saveKey = async (value) => {
+    try {
+      await api.settings({ api_key: value });
+      $("#api-key").value = "";
+      await refreshStatus();
+      toast(value ? "Key saved on this computer." : "Key removed.");
+    } catch (err) { toast(err.message); }
+  };
+  $("#btn-key-save").addEventListener("click", () => { const v = $("#api-key").value.trim(); if (v) saveKey(v); });
+  $("#btn-key-remove").addEventListener("click", () => saveKey(""));
 
   $("#btn-clear").addEventListener("click", () => { $("#clear-confirm").hidden = false; $("#btn-clear-cancel").focus(); });
   $("#btn-clear-cancel").addEventListener("click", () => { $("#clear-confirm").hidden = true; $("#btn-clear").focus(); });

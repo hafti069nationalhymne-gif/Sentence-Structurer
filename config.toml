@@ -8,8 +8,14 @@ host = "127.0.0.1"
 port = 0
 
 [ollama]
-# Optional local AI for tone, translation and short explanations.
+# Optional AI for tone, translation and short explanations.
 enabled = true
+# "local": Ollama on this computer (the model is downloaded once).
+# "cloud": Ollama Cloud at https://ollama.com with an API key (nothing is downloaded).
+#          The launcher asks for the key once and stores it only in userdata/ollama_api_key.txt
+#          (or it is read from the OLLAMA_API_KEY environment variable). Never put the key in this file.
+source = "local"
+cloud_model = "gpt-oss:20b"
 url = "http://127.0.0.1:11434"
 # Chosen by hardware during setup; see docs/MODEL_CHOICE.md.
 chat_model = "qwen3.5:4b"

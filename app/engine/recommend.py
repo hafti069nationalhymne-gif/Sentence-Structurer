@@ -200,11 +200,15 @@ def ai_available(settings: Settings, client: OllamaClient | None) -> tuple[bool,
         return False, None
     if client is None:
         return False, "AI is switched off for this run, so template mode was used."
-    st = client.status(settings.chat_model)
+    st = client.status(settings.active_model)
     if not st.available:
+        if settings.cloud:
+            return False, st.message.replace("Template mode still works.", "Template mode was used. Results are complete without AI.")
         return False, "Ollama is not running, so template mode was used. Results are complete without AI."
     if not st.model_present:
-        return False, f"The model {settings.chat_model} is not installed, so template mode was used."
+        if settings.cloud:
+            return False, st.message.replace("Template mode still works.", "Template mode was used.")
+        return False, f"The model {settings.active_model} is not installed, so template mode was used."
     return True, None
 
 
@@ -304,9 +308,26 @@ def recommend(answers: dict, kb: Knowledge, lib: Library, settings: Settings,
     if msg:
         ctx.note("mode", msg, None)
     if ok and recs:
-        mode, chat_model = "ai", settings.chat_model
+        mode, chat_model = "ai", settings.active_model
+        if settings.cloud:
+            ctx.note("mode", f"AI via Ollama Cloud ({settings.active_model}): the sentences and rule texts were sent to "
+                             "ollama.com. Comments and other answers stay on this computer.", None)
         for r in recs:
-            ctx.log += apply_ai(r, built[r["template_id"]], ctx, lib, kb, client, settings.chat_model)
+            alog = apply_ai(r, built[r["template_id"]], ctx, lib, kb, client, settings.active_model)
+            ctx.log += alog
+            errors = [l for l in alog if "model error" in l]
+            if errors and not r["ai_adjusted"] and r["why_source"] != "ai":
+                # The model is not usable right now: stop calling it for this ticket.
+                reason = errors[0].split("model error: ", 1)[-1].replace("Chat call failed: ", "")
+                ctx.log.append("AI step stopped after a model error; template text used for the remaining proofs")
+                break
+        else:
+            reason = None
+        if not any(r["ai_adjusted"] or r["why_source"] == "ai" for r in recs):
+            mode, chat_model = "template", None
+            ctx.notes = [n for n in ctx.notes if not (n["kind"] == "mode" and "AI via Ollama Cloud" in n["text"])]
+            if reason:
+                ctx.note("mode", f"The AI did not answer ({reason}) Template mode was used; the results are complete without AI.", None)
 
     if not recs:
         ctx.human_review = True
@@ -353,7 +374,7 @@ def recommend(answers: dict, kb: Knowledge, lib: Library, settings: Settings,
         "human_review_required": bool(ctx.human_review),
         "disclaimer": DISCLAIMER,
         "log": ctx.log,
-        "run": {"mode": mode, "chat_model": chat_model, "library_hash": lib.library_hash,
+        "run": {"mode": mode, "chat_model": chat_model, "ai_source": settings.ai_source if mode == "ai" else None, "library_hash": lib.library_hash,
                 "knowledge_hash": kb.knowledge_hash, "duration_ms": int((time.perf_counter() - t0) * 1000)},
     }
 
@@ -429,7 +450,7 @@ def adjust_one(answers: dict, template_id: str, overrides: dict, kb: Knowledge, 
         if ctx.tone != "factual":
             note += " Tone changes need the local AI, so the template wording is kept."
         return {"ok": True, "recommendation": rec, "message": note, "mode": "template"}
-    alog = apply_ai(rec, b, ctx, lib, kb, client, settings.chat_model)
+    alog = apply_ai(rec, b, ctx, lib, kb, client, settings.active_model)
     return {"ok": True, "recommendation": rec, "mode": "ai", "log": alog}
 
 
