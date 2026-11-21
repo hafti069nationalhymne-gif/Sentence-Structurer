@@ -50,6 +50,8 @@ def test_powershell_static_check():
     if pwsh:
         cmd = f"$null = [System.Management.Automation.Language.Parser]::ParseFile('{ROOT / 'installer/setup.ps1'}', [ref]$null, [ref]$e); if ($e) {{ exit 1 }}"
         subprocess.run([pwsh, "-NoProfile", "-Command", cmd], check=True)
+    # Whole-line comments first: quotes inside comments (e.g. "the app's") are not strings.
+    src = "\n".join("" if l.strip().startswith("#") else l for l in src.splitlines())
     code = re.sub(r'"(?:[^"`]|`.)*"', '""', src)
     code = re.sub(r"'[^']*'", "''", code)
     code = "\n".join(l.split("#")[0] if not l.strip().startswith("#") else "" for l in code.splitlines())
@@ -90,3 +92,22 @@ def test_windows_setup_survives_stderr_and_broken_pythons():
     assert "function Native" in src
     sh = (ROOT / "installer/common.sh").read_text()
     assert "only-managed" in sh and "UV_PYTHON_BIN_DIR" in sh
+
+
+def test_windows_setup_handles_application_control_block():
+    """Regression: Smart App Control blocked .venv\\Scripts\\python.exe, and the script then wrongly said the
+    API key was invalid. Now it picks a Python that Windows allows and never blames the key for that."""
+    src = (ROOT / "installer/setup.ps1").read_text(encoding="utf-8")
+    assert "function ChooseRunnablePython" in src and "EnsureRunnablePython" in src
+    assert ".venv\\\\Scripts\\\\python.exe" in src.replace("\\", "\\\\") or ".venv\\Scripts\\python.exe" in src
+    assert "PythonCore\\3.12\\InstallPath" in src  # official python.org builds only
+    assert "winget install --id Python.Python.3.12" in src
+    assert "$env:PYTHONPATH = $SitePackages" in src
+    assert "return -1" in src and "WindowsBlocked" in src
+    i = src.index("function SetupCloud")
+    cloud = src[i:src.index("function Setup {")]
+    assert "$code -eq 4" in cloud and "could not run" in cloud  # only exit code 4 means "not a key"
+    setup = src[src.index("function Setup {"):]
+    assert setup.index("SyncEnv") < setup.index("EnsureRunnablePython") < setup.index("SetupCloud")
+    sh = (ROOT / "installer/common.sh").read_text()
+    assert '"$code" -eq 4' in sh and "could not run" in sh

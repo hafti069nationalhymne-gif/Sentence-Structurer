@@ -47,9 +47,11 @@ function Native([string]$exe, [string[]]$arguments, $stdin = $null) {
     return [int]$code
   } catch {
     Log "  failed to run: $_"
-    return 1
+    if ("$_" -match "blockiert|blocked|Anwendungssteuerung|Application Control|Smart App Control") { $script:WindowsBlocked = $true }
+    return -1   # the program could not be started at all
   }
 }
+$script:WindowsBlocked = $false
 
 function Fail([string]$what, [string]$next = "Check your internet connection and double-click the launcher again.") {
   Write-Host ""
@@ -64,7 +66,7 @@ function FreeDiskGB { try { $d = Get-PSDrive -Name ((Get-Item $Root).PSDrive.Nam
 function RamGB { try { return [int]((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB) } catch { return -1 } }
 function HaveUv { Test-Path $Uv }
 function HavePython { if (-not (HaveUv)) { return $false }; return ((Native $Uv @("python", "find", "3.12")) -eq 0) }
-function HaveEnv { if (-not (Test-Path $Py)) { return $false }; return ((Native $Py @("-c", "import fastapi, uvicorn, pydantic, httpx, yaml")) -eq 0) }
+function HaveEnv { if (-not (Test-Path $Py)) { return $false }; return ((Native $script:Py @("-c", "import fastapi, uvicorn, pydantic, httpx, yaml")) -eq 0) }
 function OllamaExe {
   $c = Get-Command ollama -ErrorAction SilentlyContinue
   if ($c) { return $c.Source }
@@ -180,7 +182,7 @@ function StartOllama {
 }
 
 function PullModel {
-  $model = (& $Py -m app.cli choose-model) 2>$null
+  $model = (& $script:Py -m app.cli choose-model) 2>$null
   if (-not $model) { $model = "qwen3.5:4b" }
   $settings = Join-Path $UserData "settings.json"
   if (Test-Path $settings) { try { $s = Get-Content $settings -Raw | ConvertFrom-Json; if ($s.chat_model) { $model = $s.chat_model } } catch {} }
@@ -191,14 +193,80 @@ function PullModel {
     if ($LASTEXITCODE -ne 0) { return $false }
   }
   Push-Location $Root
-  Native $Py @("-m", "app.cli", "set-model", $model) | Out-Null
+  Native $script:Py @("-m", "app.cli", "set-model", $model) | Out-Null
   Say "Checking that $model answers in the required JSON format ..."
-  if ((Native $Py @("-m", "app.cli", "verify-model", $model)) -ne 0) {
+  if ((Native $script:Py @("-m", "app.cli", "verify-model", $model)) -ne 0) {
     Say "The model did not pass the JSON test. ClaimComposer will use template mode."
-    Native $Py @("-m", "app.cli", "set-ai", "off") | Out-Null
+    Native $script:Py @("-m", "app.cli", "set-ai", "off") | Out-Null
   }
   Pop-Location
   return $true
+}
+
+# ---- Find a Python that Windows allows to run -------------------------------------------------
+# Smart App Control (or another application control policy) can block unsigned programs such as the
+# small python.exe launcher inside .venv. Try, in order: the .venv launcher; the Python that uv installed
+# (with the app's packages on PYTHONPATH); the official, signed Python 3.12 from python.org.
+$SitePackages = Join-Path $Root ".venv\Lib\site-packages"
+
+function PythonWorks([string]$exe, [bool]$usePackagesPath) {
+  if (-not $exe -or -not (Test-Path $exe)) { return $false }
+  if ($usePackagesPath) { $env:PYTHONPATH = $SitePackages } else { Remove-Item Env:PYTHONPATH -ErrorAction SilentlyContinue }
+  return ((Native $exe @("-c", "import fastapi, pydantic_core, uvicorn, httpx, yaml")) -eq 0)
+}
+
+function ManagedPython {
+  $out = & $Uv python find 3.12 2>$null
+  if ($LASTEXITCODE -eq 0 -and $out) { return ("$($out | Select-Object -Last 1)").Trim() }
+  return $null
+}
+
+function OfficialPython {
+  # python.org installers register under PythonCore; uv-managed Pythons do not.
+  foreach ($key in @("HKCU:\Software\Python\PythonCore\3.12\InstallPath", "HKLM:\Software\Python\PythonCore\3.12\InstallPath")) {
+    try {
+      $p = Get-ItemProperty -Path $key -ErrorAction Stop
+      $exe = $p.ExecutablePath
+      if (-not $exe) { $exe = Join-Path $p.'(default)' "python.exe" }
+      if ($exe -and (Test-Path $exe)) { return $exe }
+    } catch {}
+  }
+  return $null
+}
+
+function ChooseRunnablePython {
+  $candidates = @(
+    @{ Exe = (Join-Path $Root ".venv\Scripts\python.exe"); UsePath = $false; Name = "the app environment" },
+    @{ Exe = (ManagedPython); UsePath = $true; Name = "the Python installed by uv" },
+    @{ Exe = (OfficialPython); UsePath = $true; Name = "the official Python 3.12 from python.org" }
+  )
+  foreach ($c in $candidates) {
+    if (PythonWorks $c.Exe $c.UsePath) {
+      $script:Py = $c.Exe
+      Log "Python that runs here: $($c.Name) ($($c.Exe))"
+      return $true
+    }
+  }
+  return $false
+}
+
+function EnsureRunnablePython {
+  if (ChooseRunnablePython) { return }
+  Write-Host ""
+  Say "Windows blocked the Python program that ClaimComposer needs."
+  Say "This is Smart App Control (or another application control policy). It blocks unsigned programs."
+  $w = Get-Command winget -ErrorAction SilentlyContinue
+  if ($w) {
+    Write-Host "ClaimComposer can install the official, signed Python 3.12 from python.org, which Windows allows."
+    $a = Read-Host "Install it now? [Y/n]"
+    if ($a -eq "" -or $a -match "^(y|yes|j|ja)$") {
+      Say "Installing the official Python 3.12 (python.org) for your user account ..."
+      winget install --id Python.Python.3.12 -e --scope user --accept-source-agreements --accept-package-agreements
+      if (ChooseRunnablePython) { Say "Python works now."; return }
+    }
+  }
+  Fail "Windows blocks Python on this computer (application control policy)." ("Install Python 3.12 with the official installer from https://www.python.org/downloads/ and start again. " +
+    "If Windows still blocks it, a program the app needs is blocked by Smart App Control; see logs\setup.log.")
 }
 
 function SetupCloud {
@@ -206,20 +274,24 @@ function SetupCloud {
   # it is never printed, passed on a command line or written to the log.
   Push-Location $Root
   try {
-    $code = Native $Py @("-m", "app.cli", "use-key-file")
+    $code = Native $script:Py @("-m", "app.cli", "use-key-file")
     if ($code -eq 3) {
       Say "No key found. Open OLLAMA_API_KEY.txt in the ClaimComposer folder, paste your key from"
       Say "https://ollama.com/settings/keys on the empty line, save it and start again. Template mode for now."
       return
     }
-    if ($code -ne 0) {
+    if ($code -ne 0 -and $code -ne 4) {
+      Say "The key check could not run (exit code $code). The key itself was not checked. Details: logs\setup.log"
+      return
+    }
+    if ($code -eq 4) {
       Say "The text in OLLAMA_API_KEY.txt does not look like an Ollama API key. Check it and start again."
       Say "ClaimComposer runs in template mode for now."
-      Native $Py @("-m", "app.cli", "set-ai", "off") | Out-Null
+      Native $script:Py @("-m", "app.cli", "set-ai", "off") | Out-Null
       return
     }
     Say "Checking Ollama Cloud ..."
-    if ((Native $Py @("-m", "app.cli", "verify-model")) -eq 0) {
+    if ((Native $script:Py @("-m", "app.cli", "verify-model")) -eq 0) {
       Say "Ollama Cloud works. Sentences and rule texts will be sent to ollama.com when the AI is used."
     } else {
       Say "Ollama Cloud did not answer correctly:"
@@ -236,9 +308,10 @@ function Setup {
   InstallUv
   InstallPython
   SyncEnv
+  EnsureRunnablePython
   if ($choice -eq "cloud") { SetupCloud; Log "setup finished"; return }
   Push-Location $Root
-  if ($choice -ne "ai") { Native $Py @("-m", "app.cli", "set-ai", "off") | Out-Null; Pop-Location; return }
+  if ($choice -ne "ai") { Native $script:Py @("-m", "app.cli", "set-ai", "off") | Out-Null; Pop-Location; return }
   Pop-Location
   if (-not (InstallOllama)) { Say "Ollama could not be installed. ClaimComposer will run in template mode."; return }
   if (-not (StartOllama)) { Say "Ollama did not start. ClaimComposer will run in template mode."; return }
@@ -252,7 +325,7 @@ function RunApp {
   Push-Location $Root
   try {
     # Runs in this console: closing the window ends the server.
-    & $Py -m app.main --open
+    & $script:Py -m app.main --open
   } finally {
     Pop-Location
     if ($script:OllamaProc) { try { Stop-Process -Id $script:OllamaProc.Id -ErrorAction SilentlyContinue } catch {} }

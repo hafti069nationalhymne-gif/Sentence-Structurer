@@ -179,7 +179,10 @@ setup_cloud() {
     say "No key found. Open OLLAMA_API_KEY.txt in the ClaimComposer folder, paste your key from"
     say "https://ollama.com/settings/keys on the empty line, save it and start again. Template mode for now."
     return
-  elif [ "$code" -ne 0 ]; then
+  elif [ "$code" -ne 4 ] && [ "$code" -ne 0 ]; then
+    say "The key check could not run (exit code $code). The key itself was not checked. Details: logs/setup.log"
+    return
+  elif [ "$code" -eq 4 ]; then
     say "The text in OLLAMA_API_KEY.txt does not look like an Ollama API key. Check it and start again."
     say "ClaimComposer runs in template mode for now."
     (cd "$CC_ROOT" && "$py" -m app.cli set-ai off >> "$CC_LOG" 2>&1); return
