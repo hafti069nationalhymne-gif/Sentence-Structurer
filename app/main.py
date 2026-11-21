@@ -16,7 +16,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Response
 from fastapi.staticfiles import StaticFiles
 
-from .config import BIND_HOST, LOG_DIR, STATIC_DIR, USERDATA_DIR, load_api_key, load_settings, save_api_key, save_settings
+from .config import BIND_HOST, LOG_DIR, STATIC_DIR, USERDATA_DIR, key_file_status, load_api_key, load_settings, save_api_key, save_settings
 from .engine.context import AnswerError, segment_options
 from .engine.evidence import sources_for_rule
 from .engine.recommend import adjust_one, recommend, revalidate, route_summary
@@ -119,6 +119,7 @@ def create_app(userdata: Path | None = None, ollama_transport=None) -> FastAPI:
             msg = st.message
         return {"mode": mode, "message": msg, "ollama": st.as_dict() if st else None, "settings": s.public(),
                 "ai_source": s.ai_source, "api_key_set": bool(load_api_key(userdata)),
+                "api_key_from_file": key_file_status()[0] == "ok",
                 "library_hash": lib.library_hash, "knowledge_hash": kb.knowledge_hash,
                 "templates": len(lib.templates), "bind_host": BIND_HOST}
 

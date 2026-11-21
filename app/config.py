@@ -60,14 +60,60 @@ EDITABLE = {"ollama_enabled": bool, "chat_model": str, "review_mode": bool, "usa
 
 
 # ---- Ollama Cloud API key: stored only on this computer, never returned by the API -------------
+# The simplest way: paste the key into OLLAMA_API_KEY.txt in the ClaimComposer folder.
+KEY_FILE = ROOT / "OLLAMA_API_KEY.txt"
+KEY_FILE_TEMPLATE = """# ClaimComposer: your Ollama Cloud API key
+#
+# 1. Get a key at https://ollama.com/settings/keys (sign in first).
+# 2. Paste it on the empty line below, then save this file.
+# 3. Double-click the START file. ClaimComposer then uses Ollama Cloud and downloads no model.
+#
+# Lines starting with # are ignored. Keep this file private: do not send or upload it.
+
+"""
+
+
+def _clean_key(line: str) -> str:
+    k = line.strip().strip("\ufeff").strip()
+    for prefix in ("OLLAMA_API_KEY=", "OLLAMA_API_KEY:", "Bearer ", "bearer "):
+        if k.startswith(prefix):
+            k = k[len(prefix):].strip()
+    return k.strip("'\"` ").strip()
+
+
+def key_file_status(path: Path | None = None) -> tuple[str, str | None]:
+    """('ok', key) | ('missing', None) | ('empty', None) | ('invalid', None) for OLLAMA_API_KEY.txt."""
+    path = path or KEY_FILE
+    if not path.exists():
+        return "missing", None
+    raw = path.read_bytes()
+    for enc in ("utf-8-sig", "utf-16", "latin-1"):  # Notepad may save UTF-8 with BOM or UTF-16
+        try:
+            text = raw.decode(enc)
+            if enc != "utf-16" or raw[:2] in (b"\xff\xfe", b"\xfe\xff"):
+                break
+        except UnicodeDecodeError:
+            continue
+    lines = [_clean_key(l) for l in text.splitlines()]
+    lines = [l for l in lines if l and not l.startswith("#")]
+    if not lines:
+        return "empty", None
+    key = lines[0]
+    return ("ok", key) if API_KEY_RE.fullmatch(key) else ("invalid", None)
+
+
 def api_key_file(userdata: Path | None = None) -> Path:
     return (userdata or USERDATA_DIR) / "ollama_api_key.txt"
 
 
-def load_api_key(userdata: Path | None = None) -> str | None:
-    env = os.environ.get("OLLAMA_API_KEY", "").strip()
+def load_api_key(userdata: Path | None = None, key_file: Path | None = None) -> str | None:
+    """Key from the OLLAMA_API_KEY variable, then OLLAMA_API_KEY.txt, then a key saved in Settings."""
+    env = _clean_key(os.environ.get("OLLAMA_API_KEY", ""))
     if env and API_KEY_RE.fullmatch(env):
         return env
+    status, key = key_file_status(key_file)
+    if status == "ok":
+        return key
     f = api_key_file(userdata)
     if f.exists():
         key = f.read_text(encoding="utf-8").strip()
@@ -97,7 +143,7 @@ def _settings_file(userdata: Path) -> Path:
     return userdata / "settings.json"
 
 
-def load_settings(config_path: Path | None = None, userdata: Path | None = None) -> Settings:
+def load_settings(config_path: Path | None = None, userdata: Path | None = None, key_file: Path | None = None) -> Settings:
     config_path = config_path or ROOT / "config.toml"
     userdata = userdata or USERDATA_DIR
     s = Settings()
@@ -120,14 +166,19 @@ def load_settings(config_path: Path | None = None, userdata: Path | None = None)
         s.review_mode = bool(app.get("review_mode", s.review_mode))
         s.usability_mode = bool(app.get("usability_mode", s.usability_mode))
     f = _settings_file(userdata)
+    override: dict = {}
     if f.exists():
         try:
             override = json.loads(f.read_text(encoding="utf-8"))
         except json.JSONDecodeError:
             override = {}
-        for k, typ in EDITABLE.items():
-            if k in override and isinstance(override[k], typ):
-                setattr(s, k, override[k])
+    # A key in OLLAMA_API_KEY.txt switches to Ollama Cloud unless the Settings panel chose otherwise.
+    if "ai_source" not in override and key_file_status(key_file)[0] == "ok":
+        s.ai_source = "cloud"
+        s.ollama_enabled = True
+    for k, typ in EDITABLE.items():
+        if k in override and isinstance(override[k], typ):
+            setattr(s, k, override[k])
     if s.ai_source not in ("local", "cloud"):
         s.ai_source = "local"
     return s

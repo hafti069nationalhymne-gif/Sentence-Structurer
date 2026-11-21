@@ -7,6 +7,7 @@
     python -m app.cli verify-model [NAME]  # JSON Schema test against the configured Ollama (exit 1 if it fails)
     python -m app.cli set-cloud       # reads an Ollama Cloud API key from stdin (or OLLAMA_API_KEY) and switches to the cloud
     python -m app.cli set-local       # switches back to a local Ollama
+    python -m app.cli use-key-file    # uses the key in OLLAMA_API_KEY.txt and switches to Ollama Cloud
     python -m app.cli check           # loads the knowledge base and library (exit 1 on error)
 """
 from __future__ import annotations
@@ -103,6 +104,21 @@ def main(argv: list[str]) -> int:
         s.ai_source, s.ollama_enabled = "cloud", True
         save_settings(s, USERDATA_DIR)
         print(f"ok: Ollama Cloud with model {s.cloud_model}")
+        return 0
+    if cmd == "use-key-file":
+        # Exit codes: 0 key found and Ollama Cloud switched on, 3 no key in the file, 4 the text is not a key.
+        from .config import KEY_FILE, _clean_key, key_file_status, API_KEY_RE
+
+        env = _clean_key(os.environ.get("OLLAMA_API_KEY", ""))
+        status, _ = ("ok", None) if env and API_KEY_RE.fullmatch(env) else key_file_status()
+        if status != "ok":
+            print({"missing": f"no file {KEY_FILE.name}", "empty": f"no key in {KEY_FILE.name}",
+                   "invalid": f"the text in {KEY_FILE.name} does not look like an Ollama API key"}[status])
+            return 3 if status in ("missing", "empty") else 4
+        s = load_settings()
+        s.ai_source, s.ollama_enabled = "cloud", True
+        save_settings(s, USERDATA_DIR)
+        print(f"ok: Ollama Cloud with model {s.cloud_model} (key read from {KEY_FILE.name})")
         return 0
     if cmd == "set-local":
         s = load_settings()

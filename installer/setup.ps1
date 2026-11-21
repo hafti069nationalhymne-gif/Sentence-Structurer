@@ -77,7 +77,21 @@ function ModelPresent([string]$m) {
   try { $t = Invoke-RestMethod -Uri "$OllamaUrl/api/tags" -TimeoutSec 4 -ErrorAction Stop; return [bool]($t.models | Where-Object { $_.name -eq $m }) } catch { return $false }
 }
 
+$KeyFile = Join-Path $Root "OLLAMA_API_KEY.txt"
+function KeyFileHasKey {
+  # True if OLLAMA_API_KEY.txt holds a non-comment line (the app checks that it really is a key).
+  if (-not (Test-Path $KeyFile)) { return $false }
+  $lines = Get-Content $KeyFile | Where-Object { $_.Trim() -ne "" -and -not $_.Trim().StartsWith("#") }
+  return [bool]$lines
+}
+
 function AskFirstRun {
+  # A key in OLLAMA_API_KEY.txt means: use Ollama Cloud, ask nothing, download no model.
+  if ((KeyFileHasKey) -or $env:OLLAMA_API_KEY) {
+    Say "Found an Ollama API key in OLLAMA_API_KEY.txt: using Ollama Cloud (no model download)."
+    Set-Content -Path $ChoiceFile -Value "cloud" -Encoding ASCII
+    return "cloud"
+  }
   if (Test-Path $ChoiceFile) { return (Get-Content $ChoiceFile -Raw).Trim() }
   $disk = FreeDiskGB; $ram = RamGB
   Write-Host ""
@@ -88,7 +102,8 @@ function AskFirstRun {
   Write-Host "  Optional AI for tone, translation and explanations:"
   if (-not (OllamaExe)) { Write-Host "  - Ollama, the local AI runtime                            (about 1.5 GB)" }
   Write-Host "  - a language model: qwen3.5:4b (about 3.4 GB) or gpt-oss:20b on strong computers (about 14 GB)"
-  Write-Host "  Or use Ollama Cloud with your API key: nothing is downloaded, but sentences and rule texts are sent to ollama.com."
+  Write-Host "  Or use Ollama Cloud: paste your API key into OLLAMA_API_KEY.txt in this folder and start again."
+  Write-Host "  Then nothing is downloaded, but sentences and rule texts are sent to ollama.com."
   Write-Host "  Free disk space here: $disk GB - memory: $ram GB"
   if ($disk -ge 0 -and $disk -lt 2) { Fail "there is less than 2 GB of free disk space." "Free some disk space, then start again." }
   if ($disk -ge 0 -and $disk -lt 20) { Write-Host "  Warning: under 20 GB free. Choose 'Template mode only' unless you can free space." -ForegroundColor Yellow }
@@ -187,32 +202,30 @@ function PullModel {
 }
 
 function SetupCloud {
-  # Ollama Cloud: no Ollama install and no download. The key goes to Python on stdin, never as an argument or to the log.
-  $keyFile = Join-Path $UserData "ollama_api_key.txt"
+  # Ollama Cloud: no Ollama install and no download. The app reads the key from OLLAMA_API_KEY.txt;
+  # it is never printed, passed on a command line or written to the log.
   Push-Location $Root
   try {
-    if ($env:OLLAMA_API_KEY) { Native $Py @("-m", "app.cli", "set-cloud") "" | Out-Null }
-    elseif (Test-Path $keyFile) { Native $Py @("-m", "app.cli", "set-cloud") (Get-Content $keyFile -Raw) | Out-Null }
-    else {
-      Write-Host "Create a key at https://ollama.com/settings/keys (sign in first)."
-      $secure = Read-Host "Paste your Ollama API key (input is hidden), then press Enter" -AsSecureString
-      $bstr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
-      $plain = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($bstr)
-      [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr)
-      $ok = ((Native $Py @("-m", "app.cli", "set-cloud") $plain) -eq 0)
-      $plain = $null
-      if (-not $ok) {
-        Say "That does not look like an Ollama API key. ClaimComposer will run in template mode."
-        Write-Host "You can add the key later in Settings > AI."
-        Native $Py @("-m", "app.cli", "set-ai", "off") | Out-Null
-        return
-      }
+    $code = Native $Py @("-m", "app.cli", "use-key-file")
+    if ($code -eq 3) {
+      Say "No key found. Open OLLAMA_API_KEY.txt in the ClaimComposer folder, paste your key from"
+      Say "https://ollama.com/settings/keys on the empty line, save it and start again. Template mode for now."
+      return
+    }
+    if ($code -ne 0) {
+      Say "The text in OLLAMA_API_KEY.txt does not look like an Ollama API key. Check it and start again."
+      Say "ClaimComposer runs in template mode for now."
+      Native $Py @("-m", "app.cli", "set-ai", "off") | Out-Null
+      return
     }
     Say "Checking Ollama Cloud ..."
-    if ((Native $Py @("-m", "app.cli", "verify-model")) -eq 0) { Say "Ollama Cloud works. Sentences and rule texts will be sent to ollama.com when the AI is used." }
-    else {
-      Say "Ollama Cloud did not answer correctly (wrong key, model not offered, or no internet)."
-      Write-Host "ClaimComposer still works fully in template mode. Fix the key or model in Settings > AI."
+    if ((Native $Py @("-m", "app.cli", "verify-model")) -eq 0) {
+      Say "Ollama Cloud works. Sentences and rule texts will be sent to ollama.com when the AI is used."
+    } else {
+      Say "Ollama Cloud did not answer correctly:"
+      $why = Select-String -Path $Log -Pattern "^FAIL " | Select-Object -Last 1
+      if ($why) { Say ("  " + ($why.Line -replace "^FAIL [^:]*: ", "")) }
+      Say "ClaimComposer still works fully in template mode. Fix this and start again to use the AI."
     }
   } finally { Pop-Location }
 }

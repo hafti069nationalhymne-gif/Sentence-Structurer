@@ -13,6 +13,7 @@ import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
 DIST = ROOT / "dist"
 EXCLUDE_DIRS = {".venv", ".tools", "logs", "userdata", ".git", "dist", "__pycache__", ".pytest_cache", "drafts", ".claude", "screenshots"}
 EXCLUDE_FILES = {".DS_Store", "Environmental_Claims_RAG_Complete.zip", "ollama_api_key.txt", "default_choice.txt"}
@@ -38,6 +39,9 @@ def build(cloud: bool = False) -> Path:
             info.external_attr = (stat.S_IFREG | mode) << 16
             info.compress_type = zipfile.ZIP_DEFLATED
             data = p.read_bytes()
+            if p == ROOT / "OLLAMA_API_KEY.txt":
+                from app.config import KEY_FILE_TEMPLATE  # never ship a real key
+                data = KEY_FILE_TEMPLATE.encode("utf-8")
             if cloud and p == ROOT / "config.toml":
                 data = data.replace(b'source = "local"', b'source = "cloud"')
             z.writestr(info, data)

@@ -23,16 +23,17 @@ The first time, a window lists what it will download and asks once:
   translates and writes short explanations. Every AI answer is checked and thrown away if it fails.
 - **Template mode only**: nothing extra. All recommendations work fully without AI.
 
-- **Use Ollama Cloud with an API key**: nothing is downloaded. Paste your key from
-  [ollama.com/settings/keys](https://ollama.com/settings/keys) when asked (the input is hidden). The key is stored
-  only on your computer in `userdata/ollama_api_key.txt` and is never shown again. In this mode the sentences and the
-  rule texts are sent to ollama.com; reviewer comments and your other answers never leave the computer. Your Ollama
-  account needs usage credits or a plan ([ollama.com/plans](https://ollama.com/plans)); without them the app says so
-  and continues in template mode.
+- **Use Ollama Cloud with an API key** (nothing is downloaded): before starting, open **`OLLAMA_API_KEY.txt`** in
+  the ClaimComposer folder, paste your key from [ollama.com/settings/keys](https://ollama.com/settings/keys) on the
+  empty line and save. When the file holds a key, the launcher asks nothing and uses Ollama Cloud straight away.
+  In this mode the sentences and the rule texts are sent to ollama.com; reviewer comments and your other answers never
+  leave the computer. Keep the file private. Your Ollama account needs usage credits or a plan
+  ([ollama.com/plans](https://ollama.com/plans)); without them the launcher shows the reason and the app continues in
+  template mode.
 
-You can switch between the three later in **Settings > AI** (local model, cloud model, save or remove the key).
+You can switch between the three later in **Settings > AI** (local model, cloud model; a key can also be saved there).
 For a copy with the cloud option preselected, build `dist/ClaimComposer-cloud.zip` with
-`uv run python scripts/build_release.py --cloud` (it contains no key).
+`uv run python scripts/build_release.py --cloud` (its `OLLAMA_API_KEY.txt` is always empty).
 
 Then the app opens in its own window. **Keep the black launcher window open while you work; closing it stops the app.**
 If setup is interrupted, double-click again and it continues where it stopped. If something fails, the window says what

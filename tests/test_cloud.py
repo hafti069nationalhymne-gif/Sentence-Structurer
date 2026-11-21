@@ -118,14 +118,14 @@ def test_cli_set_cloud_reads_stdin(tmp_path, monkeypatch):
     assert cli.main(["cli", "set-cloud"]) == 1
 
 
-def test_launchers_offer_cloud_without_exposing_key():
+def test_launchers_read_key_from_file_without_asking():
     from app.config import ROOT
     sh = (ROOT / "installer/common.sh").read_text()
     ps = (ROOT / "installer/setup.ps1").read_text()
-    assert "Use Ollama Cloud with an API key" in sh and "read -r -s" in sh and "set-cloud" in sh
-    assert "Use Ollama Cloud with an API key" in ps and "-AsSecureString" in ps and "set-cloud" in ps
     for src in (sh, ps):
-        assert "set-cloud $" not in src and "set-cloud \"$key" not in src  # never as an argument
+        assert "OLLAMA_API_KEY.txt" in src and "use-key-file" in src
+        assert "read -r -s" not in src and "AsSecureString" not in src  # no key prompt any more
+        assert "set-cloud $" not in src  # the key is never passed as an argument
 
 
 def test_cloud_release_zip(tmp_path):
@@ -136,7 +136,10 @@ def test_cloud_release_zip(tmp_path):
     z = zipfile.ZipFile(ROOT / "dist/ClaimComposer-cloud.zip")
     assert 'source = "cloud"' in z.read("ClaimComposer/config.toml").decode()
     assert z.read("ClaimComposer/installer/default_choice.txt").decode().strip() == "3"
-    assert not any("api_key" in n or "/userdata/" in n or "screenshots" in n for n in z.namelist())
+    assert not any("api_key.txt" in n.lower() and "OLLAMA_API_KEY.txt" not in n for n in z.namelist())
+    assert not any("/userdata/" in n or "screenshots" in n for n in z.namelist())
+    from app.config import KEY_FILE_TEMPLATE
+    assert z.read("ClaimComposer/OLLAMA_API_KEY.txt").decode() == KEY_FILE_TEMPLATE
 
 
 def test_payment_required_falls_back_once(ticket, kb, lib, tmp_path):
@@ -174,3 +177,61 @@ def test_payment_required_falls_back_once(ticket, kb, lib, tmp_path):
     assert any("usage credits" in n["text"] for n in res["notes"])
     assert not any("AI via Ollama Cloud" in n["text"] for n in res["notes"])
     assert len(calls) <= 2  # stops after the first proof instead of failing on every call
+
+
+# ---- key in OLLAMA_API_KEY.txt ---------------------------------------------------------------
+from app.config import KEY_FILE_TEMPLATE, key_file_status  # noqa: E402
+
+
+@pytest.mark.parametrize("content,encoding", [
+    (KEY_FILE_TEMPLATE + KEY + "\n", "utf-8"),
+    (KEY_FILE_TEMPLATE + KEY, "utf-8-sig"),        # Notepad "UTF-8 with BOM"
+    (KEY_FILE_TEMPLATE + KEY + "\r\n", "utf-16"),   # Notepad "Unicode"
+    (f"  {KEY}  \n", "utf-8"),
+    (f'"{KEY}"', "utf-8"),
+    (f"Bearer {KEY}", "utf-8"),
+    (f"OLLAMA_API_KEY={KEY}", "utf-8"),
+])
+def test_key_file_variants(tmp_path, content, encoding):
+    f = tmp_path / "OLLAMA_API_KEY.txt"
+    f.write_bytes(content.encode(encoding))
+    assert key_file_status(f) == ("ok", KEY)
+    assert load_api_key(tmp_path, key_file=f) == KEY
+
+
+def test_key_file_empty_missing_invalid(tmp_path):
+    f = tmp_path / "OLLAMA_API_KEY.txt"
+    assert key_file_status(f)[0] == "missing"
+    f.write_text(KEY_FILE_TEMPLATE)
+    assert key_file_status(f)[0] == "empty"
+    f.write_text(KEY_FILE_TEMPLATE + "paste my key here please\n")
+    assert key_file_status(f)[0] == "invalid"
+
+
+def test_key_file_switches_to_cloud(tmp_path):
+    f = tmp_path / "OLLAMA_API_KEY.txt"
+    f.write_text(KEY_FILE_TEMPLATE + KEY)
+    s = load_settings(userdata=tmp_path, key_file=f)
+    assert s.cloud and s.ollama_enabled and s.active_model == "gpt-oss:20b"
+    f.write_text(KEY_FILE_TEMPLATE)
+    assert not load_settings(userdata=tmp_path, key_file=f).cloud
+
+
+def test_cli_use_key_file(tmp_path, monkeypatch):
+    from app import cli, config
+    f = tmp_path / "OLLAMA_API_KEY.txt"
+    monkeypatch.setattr(config, "KEY_FILE", f)
+    monkeypatch.setattr(cli, "USERDATA_DIR", tmp_path)
+    monkeypatch.setattr(config, "USERDATA_DIR", tmp_path)
+    f.write_text(KEY_FILE_TEMPLATE)
+    assert cli.main(["cli", "use-key-file"]) == 3
+    f.write_text("not a key at all!")
+    assert cli.main(["cli", "use-key-file"]) == 4
+    f.write_text(KEY_FILE_TEMPLATE + KEY)
+    assert cli.main(["cli", "use-key-file"]) == 0
+    assert load_settings(userdata=tmp_path, key_file=f).ai_source == "cloud"
+
+
+def test_repository_key_file_has_no_key():
+    from app.config import ROOT
+    assert (ROOT / "OLLAMA_API_KEY.txt").read_text(encoding="utf-8") == KEY_FILE_TEMPLATE

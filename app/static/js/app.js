@@ -61,7 +61,8 @@ async function refreshStatus() {
     $("#field-cloud-model").hidden = !cloud;
     $("#field-key").hidden = !cloud;
     $("#cloud-note").hidden = !cloud;
-    $("#key-state").textContent = s.api_key_set ? "A key is stored on this computer." : "No key stored yet.";
+    $("#key-state").textContent = s.api_key_from_file ? "Using the key in OLLAMA_API_KEY.txt (ClaimComposer folder)."
+      : s.api_key_set ? "A key is stored on this computer." : "No key yet: paste it into OLLAMA_API_KEY.txt in the ClaimComposer folder, or here.";
     f.review_mode.checked = s.settings.review_mode;
     f.usability_mode.checked = s.settings.usability_mode;
     $("#btn-sus").hidden = !s.settings.usability_mode;

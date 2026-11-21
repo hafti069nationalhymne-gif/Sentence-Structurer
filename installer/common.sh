@@ -53,8 +53,18 @@ ollama_bin()   { command -v ollama 2>/dev/null || echo "/Applications/Ollama.app
 ollama_up()    { curl -fsS --max-time 2 "$OLLAMA_URL/api/version" >/dev/null 2>&1; }
 model_present() { curl -fsS --max-time 4 "$OLLAMA_URL/api/tags" 2>/dev/null | grep -q "\"name\":\"$1\""; }
 
+key_file_has_key() {
+  # True if OLLAMA_API_KEY.txt holds a non-comment line (the app checks that it really is a key).
+  [ -f "$CC_ROOT/OLLAMA_API_KEY.txt" ] && grep -v '^[[:space:]]*#' "$CC_ROOT/OLLAMA_API_KEY.txt" | tr -d '[:space:]' | grep -q .
+}
+
 ask_first_run() {
-  # Show what will be downloaded and ask once. The answer is remembered.
+  # A key in OLLAMA_API_KEY.txt means: use Ollama Cloud, ask nothing, download no model.
+  if key_file_has_key || [ -n "${OLLAMA_API_KEY:-}" ]; then
+    say "Found an Ollama API key in OLLAMA_API_KEY.txt: using Ollama Cloud (no model download)."
+    CC_CHOICE="cloud"; echo "$CC_CHOICE" > "$CC_CHOICE_FILE"; return
+  fi
+  # Otherwise show what will be downloaded and ask once. The answer is remembered.
   if [ -f "$CC_CHOICE_FILE" ]; then CC_CHOICE="$(cat "$CC_CHOICE_FILE")"; return; fi
   local disk ram
   disk="$(free_disk_gb)"; ram="$(total_ram_gb)"
@@ -66,7 +76,8 @@ ask_first_run() {
   say "  Optional AI for tone, translation and explanations:"
   have_ollama || say "  - Ollama, the local AI runtime                      (about 1.5 GB)"
   say "  - a language model: qwen3.5:4b (about 3.4 GB) or gpt-oss:20b on strong computers (about 14 GB)"
-  say "  Or use Ollama Cloud with your API key: nothing is downloaded, but sentences and rule texts are sent to ollama.com."
+  say "  Or use Ollama Cloud: paste your API key into OLLAMA_API_KEY.txt in this folder and start again."
+  say "  Then nothing is downloaded, but sentences and rule texts are sent to ollama.com."
   say "  Free disk space here: ${disk:-?} GB · memory: ${ram:-?} GB"
   if [ -n "${disk:-}" ] && [ "$disk" -lt 2 ]; then
     fail "there is less than 2 GB of free disk space." "free some disk space, then start again."
@@ -160,32 +171,26 @@ pull_model() {
 }
 
 setup_cloud() {
-  # Ollama Cloud: no Ollama install and no download. The key is passed on stdin, never as an argument or to the log.
-  local py="$CC_ROOT/.venv/bin/python" keyfile="$CC_USERDATA/ollama_api_key.txt" key=""
-  if [ -n "${OLLAMA_API_KEY:-}" ]; then
-    (cd "$CC_ROOT" && "$py" -m app.cli set-cloud < /dev/null >> "$CC_LOG" 2>&1)
-  elif [ -f "$keyfile" ]; then
-    (cd "$CC_ROOT" && "$py" -m app.cli set-cloud < "$keyfile" >> "$CC_LOG" 2>&1)
-  else
-    if [ ! -t 0 ]; then say "No Ollama Cloud API key was given. ClaimComposer will run in template mode."; \
-      (cd "$CC_ROOT" && "$py" -m app.cli set-ai off >> "$CC_LOG" 2>&1); return; fi
-    say "Create a key at https://ollama.com/settings/keys (sign in first)."
-    read -r -s -p "Paste your Ollama API key (input is hidden), then press Enter: " key; echo
-    if ! printf '%s\n' "$key" | (cd "$CC_ROOT" && "$py" -m app.cli set-cloud >> "$CC_LOG" 2>&1); then
-      key=""
-      say "That does not look like an Ollama API key. ClaimComposer will run in template mode."
-      say "You can add the key later in Settings > AI."
-      (cd "$CC_ROOT" && "$py" -m app.cli set-ai off >> "$CC_LOG" 2>&1); return
-    fi
-    key=""
+  # Ollama Cloud: no Ollama install and no download. The key is read from OLLAMA_API_KEY.txt by the app;
+  # it is never printed, passed on a command line or written to the log.
+  local py="$CC_ROOT/.venv/bin/python" code=0
+  (cd "$CC_ROOT" && "$py" -m app.cli use-key-file >> "$CC_LOG" 2>&1) || code=$?
+  if [ "$code" -eq 3 ]; then
+    say "No key found. Open OLLAMA_API_KEY.txt in the ClaimComposer folder, paste your key from"
+    say "https://ollama.com/settings/keys on the empty line, save it and start again. Template mode for now."
+    return
+  elif [ "$code" -ne 0 ]; then
+    say "The text in OLLAMA_API_KEY.txt does not look like an Ollama API key. Check it and start again."
+    say "ClaimComposer runs in template mode for now."
+    (cd "$CC_ROOT" && "$py" -m app.cli set-ai off >> "$CC_LOG" 2>&1); return
   fi
   say "Checking Ollama Cloud ..."
   if (cd "$CC_ROOT" && "$py" -m app.cli verify-model >> "$CC_LOG" 2>&1); then
     say "Ollama Cloud works. Sentences and rule texts will be sent to ollama.com when the AI is used."
   else
-    say "Ollama Cloud did not answer correctly (wrong key, model not offered, or no internet)."
-    say "ClaimComposer still works fully in template mode. Fix the key or model in Settings > AI, or remove"
-    say "userdata/setup_choice.txt and start again."
+    say "Ollama Cloud did not answer correctly:"
+    say "  $(grep '^FAIL' "$CC_LOG" | tail -1 | sed 's/^FAIL [^:]*: //')"
+    say "ClaimComposer still works fully in template mode. Fix this and start again to use the AI."
   fi
 }
 

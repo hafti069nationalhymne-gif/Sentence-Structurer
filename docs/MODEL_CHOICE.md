@@ -42,10 +42,11 @@ If `qwen3.5:4b` turns out not to exist on the day of installation, set another s
 
 ## Ollama Cloud mode (no download)
 
-Set `source = "cloud"` in `config.toml`, choose option 3 in the launcher, or switch in Settings > AI.
+Paste the key into `OLLAMA_API_KEY.txt` in the ClaimComposer folder (the launcher then uses the cloud without asking),
+set `source = "cloud"` in `config.toml`, or switch in Settings > AI.
 Calls go to `https://ollama.com/api/chat` with `Authorization: Bearer <key>`; the URL is fixed in code so the key can
-only ever be sent to Ollama Cloud. The key comes from `userdata/ollama_api_key.txt` (written with permissions 600) or
-the `OLLAMA_API_KEY` environment variable, and it is never returned by the API, written to `settings.json`, exported
+only ever be sent to Ollama Cloud. The key comes from the `OLLAMA_API_KEY` environment variable, `OLLAMA_API_KEY.txt`, or a key saved in Settings
+(`userdata/ollama_api_key.txt`, permissions 600), and it is never returned by the API, written to `settings.json`, exported
 or included in a release zip.
 
 **Default cloud model: `gpt-oss:20b`.** Checked against the live Ollama Cloud model list on 21 November 2026: the
