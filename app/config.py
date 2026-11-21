@@ -31,7 +31,8 @@ class Settings:
     ollama_timeout_s: float = 90.0
     ai_source: str = "local"          # "local" (Ollama on this computer) or "cloud" (Ollama Cloud with an API key)
     cloud_url: str = CLOUD_URL
-    cloud_model: str = "gpt-oss:20b"
+    cloud_model: str = "auto"         # "auto" = best model for this app among those the key can use
+    cloud_model_resolved: str | None = None  # what "auto" resolved to (not saved)
     review_mode: bool = False
     usability_mode: bool = False
     extra: dict = field(default_factory=dict)
@@ -42,7 +43,11 @@ class Settings:
 
     @property
     def active_model(self) -> str:
-        return self.cloud_model if self.cloud else self.chat_model
+        if not self.cloud:
+            return self.chat_model
+        if self.cloud_model == "auto":
+            return self.cloud_model_resolved or "auto"
+        return self.cloud_model
 
     @property
     def active_url(self) -> str:

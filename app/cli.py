@@ -8,6 +8,7 @@
     python -m app.cli set-cloud       # reads an Ollama Cloud API key from stdin (or OLLAMA_API_KEY) and switches to the cloud
     python -m app.cli set-local       # switches back to a local Ollama
     python -m app.cli use-key-file    # uses the key in OLLAMA_API_KEY.txt and switches to Ollama Cloud
+    python -m app.cli pick-cloud-model  # ranks the key's models for this app, tests them, saves the first that works
     python -m app.cli check           # loads the knowledge base and library (exit 1 on error)
 """
 from __future__ import annotations
@@ -120,6 +121,25 @@ def main(argv: list[str]) -> int:
         save_settings(s, USERDATA_DIR)
         print(f"ok: Ollama Cloud with model {s.cloud_model} (key read from {KEY_FILE.name})")
         return 0
+    if cmd == "pick-cloud-model":
+        from .model_pick import pick_model
+        from .ollama_client import make_client
+
+        s = load_settings()
+        s.ai_source = "cloud"
+        client = make_client(s)
+        client.timeout = 120
+        res = pick_model(client)
+        for m, ok, note in res["tried"]:
+            print(f"  tried {m}: {'OK' if ok else note}")
+        if res["model"]:
+            s.cloud_model = res["model"]
+            save_settings(s, USERDATA_DIR)
+        if res["ok"]:
+            print(f"OK {res['model']}: {res['reason']}")
+            return 0
+        print(f"FAIL {res['model'] or 'no model'}: {res['reason']}")
+        return 2
     if cmd == "set-local":
         s = load_settings()
         s.ai_source = "local"

@@ -40,7 +40,18 @@ def create_app(userdata: Path | None = None, ollama_transport=None) -> FastAPI:
     store = Store(userdata / "claimcomposer.sqlite")
 
     def client() -> OllamaClient:
-        return make_client(state["settings"], userdata, transport=ollama_transport)
+        c = make_client(state["settings"], userdata, transport=ollama_transport)
+        s = state["settings"]
+        if s.cloud and s.cloud_model == "auto" and not s.cloud_model_resolved:
+            # Pick the best-fitting model the key offers (ranking only; the launcher also tests it).
+            from .model_pick import rank_models
+            try:
+                ranked = rank_models(c.tags())
+                if ranked:
+                    s.cloud_model_resolved = ranked[0][0]
+            except Exception:  # noqa: BLE001 - status() reports the problem
+                pass
+        return c
 
     app = FastAPI(title="ClaimComposer", docs_url=None, redoc_url=None, openapi_url=None)
 

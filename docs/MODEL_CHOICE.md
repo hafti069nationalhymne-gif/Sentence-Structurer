@@ -55,3 +55,27 @@ cloud. The chat and JSON Schema test could not be completed: the account used fo
 call with `402 Payment Required` ("Add usage credits or subscribe"). The app handles this case: it shows the
 reason, stops calling the AI for that ticket and returns the template results. Once the account has credits,
 `uv run python -m app.cli verify-model` runs the JSON Schema test.
+
+### Automatic choice of the cloud model (`cloud_model = "auto"`, the default)
+
+The cloud model is chosen from the models the API key can use, by fit for this app (short rewrites, German
+translation, strict JSON, speed). `app/model_pick.py` ranks them:
+
+| Rank | Models | Why |
+|---|---|---|
+| 1 | Qwen (not coder or vision) | Instruction following, strong German, reliable JSON; preferred by the project |
+| 2 | Mistral | Very good German, reliable JSON |
+| 3 | Gemma | Multilingual, mid-size |
+| 4 | `gpt-oss:20b` | Small general model with dependable JSON |
+| 5 | "flash" variants | Fast general models |
+| 6 | Other large general models | Work, but slower than one sentence needs |
+| – | Code, vision, OCR, embedding models | Excluded |
+
+Smaller models win ties. At setup, `python -m app.cli pick-cloud-model` runs the JSON Schema test on the best-ranked
+models in order and saves the first that passes. If the account itself is the problem (no credits, rejected key,
+usage limit) it stops after one request and keeps the best-ranked model for later. At runtime, "auto" without a saved
+choice resolves to the best-ranked model in the key's list.
+
+With the key used for testing (21 November 2026) the list held no Qwen model, so the ranking starts with
+`mistral-large-4`, then `gemma4:31b`, then `gpt-oss:20b`. A Qwen model is chosen automatically as soon as the key
+offers one. To force a model, set it in Settings > AI or `cloud_model` in `config.toml`.

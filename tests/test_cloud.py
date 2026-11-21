@@ -212,7 +212,7 @@ def test_key_file_switches_to_cloud(tmp_path):
     f = tmp_path / "OLLAMA_API_KEY.txt"
     f.write_text(KEY_FILE_TEMPLATE + KEY)
     s = load_settings(userdata=tmp_path, key_file=f)
-    assert s.cloud and s.ollama_enabled and s.active_model == "gpt-oss:20b"
+    assert s.cloud and s.ollama_enabled and s.cloud_model == "auto"
     f.write_text(KEY_FILE_TEMPLATE)
     assert not load_settings(userdata=tmp_path, key_file=f).cloud
 
@@ -235,3 +235,70 @@ def test_cli_use_key_file(tmp_path, monkeypatch):
 def test_repository_key_file_has_no_key():
     from app.config import ROOT
     assert (ROOT / "OLLAMA_API_KEY.txt").read_text(encoding="utf-8") == KEY_FILE_TEMPLATE
+
+
+# ---- choosing the cloud model from what the key offers ------------------------------------------
+from app.model_pick import pick_model, rank_models  # noqa: E402
+
+KEY_MODELS = ["beam", "clef:27b", "deepseek-v4-pro:0813", "deepseek-v4.1-flash", "gemma4:31b", "glm-5.3-flash",
+              "gpt-oss:120b", "gpt-oss:20b", "kimi-k2.7-code", "kimi-k3", "mistral-large-4", "nemotron-3-super"]
+
+
+def test_ranking_without_qwen():
+    order = [m for m, _ in rank_models(KEY_MODELS)]
+    assert order[:3] == ["mistral-large-4", "gemma4:31b", "gpt-oss:20b"]
+    assert "kimi-k2.7-code" not in order  # code models are excluded
+    assert order.index("deepseek-v4.1-flash") < order.index("gpt-oss:120b")
+    assert set(order[-2:]) == {"clef:27b", "beam"}  # unknown names come last
+
+
+def test_qwen_preferred_and_small_first():
+    order = [m for m, _ in rank_models(KEY_MODELS + ["qwen3-coder:480b", "qwen3.5:122b", "qwen3.5:4b", "qwen3-vl:235b"])]
+    assert order[:2] == ["qwen3.5:4b", "qwen3.5:122b"]
+    assert "qwen3-coder:480b" not in order and "qwen3-vl:235b" not in order
+
+
+def test_pick_first_model_that_works(tmp_path):
+    fails = {"mistral-large-4": (500, "model overloaded")}  # one model down: the next one is tried
+    with FakeOllama(lambda k, u, b: {"sentence": "The cap is not included.", "count": 3},
+                    models=KEY_MODELS, api_key=KEY, fail_models=fails) as f:
+        c = OllamaClient(f.url, 30, api_key=KEY, cloud=True)
+        res = pick_model(c)
+    assert res["ok"] and res["model"] == "gemma4:31b"
+    assert [t[0] for t in res["tried"]] == ["mistral-large-4", "gemma4:31b"]
+
+
+def test_pick_without_credits_stops_and_keeps_best(tmp_path):
+    fails = {m: (402, "Add usage credits or subscribe") for m in KEY_MODELS}
+    with FakeOllama(models=KEY_MODELS, api_key=KEY, fail_models=fails) as f:
+        res = pick_model(OllamaClient(f.url, 30, api_key=KEY, cloud=True))
+        assert len(f.calls) == 1  # an account problem: no need to try every model
+    assert not res["ok"] and res["model"] == "mistral-large-4" and "usage credits" in res["reason"]
+
+
+def test_auto_model_resolved_by_server(tmp_path, monkeypatch):
+    from fastapi.testclient import TestClient
+    from app.main import create_app
+    from app import config
+    monkeypatch.setattr(config, "KEY_FILE", tmp_path / "none.txt")
+    save_api_key(KEY, tmp_path / "ud")
+    with FakeOllama(echo_responder, models=KEY_MODELS, api_key=KEY) as f:
+        app = create_app(tmp_path / "ud")
+        s = app.state.settings["settings"]
+        s.ai_source, s.cloud_url, s.cloud_model, s.ollama_enabled = "cloud", f.url, "auto", True
+        st = TestClient(app).get("/api/status").json()
+    assert st["mode"] == "ai" and st["settings"]["active_model"] == "mistral-large-4"
+
+
+def test_cli_pick_cloud_model(tmp_path, monkeypatch):
+    from app import cli, config
+    monkeypatch.setattr(cli, "USERDATA_DIR", tmp_path)
+    monkeypatch.setattr(config, "USERDATA_DIR", tmp_path)
+    monkeypatch.setattr(config, "KEY_FILE", tmp_path / "none.txt")
+    save_api_key(KEY, tmp_path)
+    with FakeOllama(lambda k, u, b: {"sentence": "x", "count": 1}, models=KEY_MODELS, api_key=KEY) as f:
+        monkeypatch.setattr(config, "CLOUD_URL", f.url)
+        real = config.load_settings
+        monkeypatch.setattr(cli, "load_settings", lambda: (lambda s: (setattr(s, "cloud_url", f.url), s)[1])(real(userdata=tmp_path)))
+        assert cli.main(["cli", "pick-cloud-model"]) == 0
+    assert config.load_settings(userdata=tmp_path).cloud_model == "mistral-large-4"

@@ -290,8 +290,10 @@ function SetupCloud {
       Native $script:Py @("-m", "app.cli", "set-ai", "off") | Out-Null
       return
     }
-    Say "Checking Ollama Cloud ..."
-    if ((Native $script:Py @("-m", "app.cli", "verify-model")) -eq 0) {
+    Say "Choosing the best Ollama Cloud model your key can use ..."
+    if ((Native $script:Py @("-m", "app.cli", "pick-cloud-model")) -eq 0) {
+      $ok = Select-String -Path $Log -Pattern "^OK " | Select-Object -Last 1
+      if ($ok) { Say ("  " + ($ok.Line -replace "^OK ", "")) }
       Say "Ollama Cloud works. Sentences and rule texts will be sent to ollama.com when the AI is used."
     } else {
       Say "Ollama Cloud did not answer correctly:"

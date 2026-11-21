@@ -15,7 +15,7 @@ def data_block(text: str) -> str:
 class FakeOllama:
     """Run with `with FakeOllama(responder) as f: f.url`. `responder(kind, user_prompt, body) -> dict`."""
 
-    def __init__(self, responder=None, models=("qwen3.5:4b",), version="0.12.0", api_key=None):
+    def __init__(self, responder=None, models=("qwen3.5:4b",), version="0.12.0", api_key=None, fail_models=None):
         """With api_key set it behaves like Ollama Cloud: Bearer auth required, no /api/version."""
         self.responder = responder or echo_responder
         self.models = list(models)
@@ -23,6 +23,7 @@ class FakeOllama:
         self.api_key = api_key
         self.calls: list[dict] = []
         self.auth_headers: list[str | None] = []
+        self.fail_models = dict(fail_models or {})  # model -> (status, error text), like Ollama Cloud's 402
         fake = self
 
         class H(BaseHTTPRequestHandler):
@@ -67,6 +68,9 @@ class FakeOllama:
                     return self._json(200, {"status": "success"})
                 if self.path == "/api/chat":
                     fake.calls.append(body)
+                    if body.get("model") in fake.fail_models:
+                        code, err = fake.fail_models[body["model"]]
+                        return self._json(code, {"error": err})
                     user = body["messages"][-1]["content"]
                     kind = "why" if "why the recommended sentence fits" in user else (
                         "translate" if "Translate the sentence" in user else "tone")

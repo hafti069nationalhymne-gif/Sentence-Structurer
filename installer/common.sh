@@ -187,8 +187,9 @@ setup_cloud() {
     say "ClaimComposer runs in template mode for now."
     (cd "$CC_ROOT" && "$py" -m app.cli set-ai off >> "$CC_LOG" 2>&1); return
   fi
-  say "Checking Ollama Cloud ..."
-  if (cd "$CC_ROOT" && "$py" -m app.cli verify-model >> "$CC_LOG" 2>&1); then
+  say "Choosing the best Ollama Cloud model your key can use ..."
+  if (cd "$CC_ROOT" && "$py" -m app.cli pick-cloud-model >> "$CC_LOG" 2>&1); then
+    say "  $(grep '^OK ' "$CC_LOG" | tail -1 | sed 's/^OK //')"
     say "Ollama Cloud works. Sentences and rule texts will be sent to ollama.com when the AI is used."
   else
     say "Ollama Cloud did not answer correctly:"
