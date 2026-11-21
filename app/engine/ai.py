@@ -36,14 +36,15 @@ QUALIFIERS = {
            "excluding carbon credits", "separately", "where available", "where collection", "as required by law",
            "only", "by weight", "not deducted", "other life-cycle stages", "eligibility only means", "does not show",
            "use biocides safely", "use plant protection products safely", "always read the label", "do not leave",
-           "applicable minimum", "range a to g", "interim target", "independent verification", "per "],
+           "applicable minimum", "range a to g", "interim target", "independent verification", "separate statement", "per "],
     "de": ["nicht eingeschlossen", "nicht", "davon getrennt", "sofern vorhanden", "wie gesetzlich", "nur",
            "gewicht", "nicht angerechnet", "nicht eingerechnet", "andere lebenszyklusphasen", "biozidprodukte vorsichtig verwenden",
            "pflanzenschutzmittel vorsichtig verwenden", "etikett", "mindestanteil", "spektrum a bis g", "zwischenziel",
-           "unabhängige überprüfung", "je "],
+           "unabhängige überprüfung", "gesonderte angabe", "je "],
 }
 EN_TO_DE_QUALIFIER = {
     "not included": r"nicht eingeschlossen|nicht enthalten|nicht inbegriffen",
+    "separate statement": r"gesondert",
     "does not reduce": r"\bnicht\b", "do not reduce": r"\bnicht\b",
     "where available": r"sofern (vorhanden|verfügbar)|wo verfügbar",
     "as required by law": r"wie gesetzlich|gesetzlich vorgeschrieben",

@@ -59,6 +59,8 @@ key_file_has_key() {
 }
 
 ask_first_run() {
+  # A remembered choice of the local AI wins (for example after Ollama Cloud asked for a plan).
+  if [ -f "$CC_CHOICE_FILE" ] && [ "$(cat "$CC_CHOICE_FILE")" = "ai" ]; then CC_CHOICE="ai"; return; fi
   # A key in OLLAMA_API_KEY.txt means: use Ollama Cloud, ask nothing, download no model.
   if key_file_has_key || [ -n "${OLLAMA_API_KEY:-}" ]; then
     say "Found an Ollama API key in OLLAMA_API_KEY.txt: using Ollama Cloud (no model download)."
@@ -75,7 +77,7 @@ ask_first_run() {
   have_env    || say "  - the app's Python packages                         (about 40 MB)"
   say "  Optional AI for tone, translation and explanations:"
   have_ollama || say "  - Ollama, the local AI runtime                      (about 1.5 GB)"
-  say "  - a language model: qwen3.5:4b (about 3.4 GB) or gpt-oss:20b on strong computers (about 14 GB)"
+  say "  - a Qwen language model: qwen3.5:4b (about 3.3 GB); qwen3.5:9b on strong computers (about 6.6 GB)"
   say "  Or use Ollama Cloud: paste your API key into OLLAMA_API_KEY.txt in this folder and start again."
   say "  Then nothing is downloaded, but sentences and rule texts are sent to ollama.com."
   say "  Free disk space here: ${disk:-?} GB · memory: ${ram:-?} GB"
@@ -153,11 +155,13 @@ start_ollama() {
 }
 
 pull_model() {
-  local model
+  local model saved=""
+  # A Qwen model sized for this computer; a model chosen earlier is kept if it is already downloaded.
   model="$("$CC_ROOT/.venv/bin/python" -m app.cli choose-model 2>>"$CC_LOG")" || model="qwen3.5:4b"
-  if [ -f "$CC_USERDATA/settings.json" ] && grep -q '"chat_model"' "$CC_USERDATA/settings.json"; then
-    model="$("$CC_ROOT/.venv/bin/python" -c 'import json;print(json.load(open("userdata/settings.json"))["chat_model"])' 2>/dev/null || echo "$model")"
+  if [ -f "$CC_USERDATA/settings.json" ]; then
+    saved="$(cd "$CC_ROOT" && "$CC_ROOT/.venv/bin/python" -c 'import json;print(json.load(open("userdata/settings.json")).get("chat_model",""))' 2>/dev/null)"
   fi
+  if [ -n "$saved" ] && model_present "$saved"; then model="$saved"; fi
   if model_present "$model"; then log "model $model present"; else
     say "Downloading the language model $model (this can take a while; progress below) ..."
     "$(ollama_bin)" pull "$model" || return 1
@@ -194,17 +198,34 @@ setup_cloud() {
   else
     say "Ollama Cloud did not answer correctly:"
     say "  $(grep '^FAIL' "$CC_LOG" | tail -1 | sed 's/^FAIL [^:]*: //')"
-    say "ClaimComposer still works fully in template mode. Fix this and start again to use the AI."
+    local ans="n"
+    if [ -t 0 ]; then
+      say "You can use a local Qwen model instead. It runs on this computer, needs no plan or key,"
+      read -r -p "and downloads about 3-7 GB once. Use the local AI instead? [Y/n] " ans || ans="n"
+      [ -n "$ans" ] || ans="y"
+    fi
+    case "$ans" in
+      y|Y|yes|j|J|ja)
+        CC_CHOICE="ai"; echo "ai" > "$CC_CHOICE_FILE"
+        (cd "$CC_ROOT" && "$py" -m app.cli set-local >> "$CC_LOG" 2>&1)
+        setup_local ;;
+      *) say "ClaimComposer still works fully in template mode. Fix this and start again to use the AI." ;;
+    esac
   fi
+}
+
+setup_local() {
+  if ! install_ollama; then say "Ollama could not be installed. ClaimComposer will run in template mode."; return; fi
+  if ! start_ollama; then say "Ollama did not start. ClaimComposer will run in template mode."; return; fi
+  pull_model || say "The model could not be downloaded. ClaimComposer will run in template mode."
 }
 
 setup_ai() {
   if [ "${CC_CHOICE:-template}" = "cloud" ]; then setup_cloud; return; fi
   if [ "${CC_CHOICE:-template}" != "ai" ]; then
     (cd "$CC_ROOT" && "$CC_ROOT/.venv/bin/python" -m app.cli set-ai off >> "$CC_LOG" 2>&1); return; fi
-  if ! install_ollama; then say "Ollama could not be installed. ClaimComposer will run in template mode."; return; fi
-  if ! start_ollama; then say "Ollama did not start. ClaimComposer will run in template mode."; return; fi
-  pull_model || say "The model could not be downloaded. ClaimComposer will run in template mode."
+  (cd "$CC_ROOT" && "$CC_ROOT/.venv/bin/python" -m app.cli set-local >> "$CC_LOG" 2>&1)
+  setup_local
 }
 
 cc_setup() {

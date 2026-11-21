@@ -20,7 +20,7 @@ export const api = {
   questionnaire: () => call("GET", "/api/questionnaire"),
   status: () => call("GET", "/api/status"),
   route: (answers) => call("POST", "/api/route", { answers }),
-  recommend: (answers, session_id) => call("POST", "/api/recommend", { answers, session_id }),
+  recommend: (answers, session_id, use_ai = true) => call("POST", "/api/recommend", { answers, session_id, use_ai }),
   revalidate: (answers, template_id, values) => call("POST", "/api/revalidate", { answers, template_id, values }),
   adjust: (answers, template_id, values) => call("POST", "/api/adjust", { answers, template_id, values }),
   sources: (ruleId) => call("GET", `/api/sources/${encodeURIComponent(ruleId)}`),

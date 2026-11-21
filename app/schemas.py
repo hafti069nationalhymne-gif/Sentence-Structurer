@@ -67,7 +67,7 @@ class SusRequest(BaseModel):
 class EventRequest(BaseModel):
     session_id: Optional[str] = Field(default=None, max_length=64)
     ticket_id: Optional[int] = None
-    type: Literal["copy", "tone", "language", "sources", "duplicate", "new_ticket"]
+    type: Literal["copy", "tone", "language", "sources", "duplicate", "new_ticket", "ai_adjust"]
     payload: dict = Field(default_factory=dict)
 
 

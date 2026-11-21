@@ -19,9 +19,9 @@ def ticket(kb):
             "facts": {"X": "60", "material": "polyester", "scheme": "Global Recycled Standard"}}  # [ID] stays a placeholder
 
 
-def run(ticket, kb, lib, responder, models=("qwen3.5:4b",)):
+def run(ticket, kb, lib, responder, models=("qwen3.5:4b",), **settings_kw):
     with FakeOllama(responder, models=models) as f:
-        s = Settings(ollama_enabled=True, ollama_url=f.url, chat_model="qwen3.5:4b")
+        s = Settings(ollama_enabled=True, ollama_url=f.url, chat_model="qwen3.5:4b", **settings_kw)
         res = recommend(ticket, kb, lib, s, OllamaClient(f.url))
         return res, f.calls
 
@@ -93,7 +93,7 @@ def test_translation_checked(ticket, kb, lib):
         if kind == "why":
             return {"why": "x.", "chunk_ids": [first_chunk_id(user)]}
         return {"sentence": data_block(user)}
-    res, _ = run(de, kb, lib, english_echo)
+    res, _ = run(de, kb, lib, english_echo, translate_unreviewed=True)
     for rec in res["recommendations"]:
         assert "translation" not in rec["ai_parts"]
         assert rec["language"] == "de" and "German wording not yet reviewed" in rec["tags"]
@@ -145,6 +145,21 @@ def test_verify_model_cli(monkeypatch, tmp_path):
 
 def test_choose_model_by_hardware():
     from app.cli import choose_model
-    assert choose_model(ram=64, gpu=0) == "gpt-oss:20b"
-    assert choose_model(ram=16, gpu=16) == "gpt-oss:20b"
-    assert choose_model(ram=16, gpu=8) == "qwen3.5:4b"
+    assert choose_model(ram=64, gpu=0) == "qwen3.5:9b"
+    assert choose_model(ram=16, gpu=8) == "qwen3.5:9b"
+    assert choose_model(ram=16, gpu=0) == "qwen3.5:4b"
+    assert choose_model(ram=6, gpu=0) == "qwen3.5:2b"
+
+
+
+def test_prepared_german_kept_by_default(ticket, kb, lib):
+    """By default the AI does not re-translate prepared (unreviewed) German drafts: they read better."""
+    de = {**ticket, "language": "de", "tone": "factual"}
+    res, calls = run(de, kb, lib, echo_responder)
+    assert not any("Translate the sentence" in c["messages"][-1]["content"] for c in calls)
+    assert all(r["language"] == "de" and "translation" not in r["ai_parts"] for r in res["recommendations"])
+
+
+def test_separate_statement_is_protected():
+    src = "Separate statement: 60 % of the polyester in the outer fabric is recycled fibre."
+    assert not ai.structural_check(src, src.replace("Separate statement: ", ""), "en", "en").ok

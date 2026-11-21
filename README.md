@@ -19,17 +19,19 @@ unless you choose the optional Ollama Cloud mode described below.
 
 The first time, a window lists what it will download and asks once:
 
-- **Install with AI**: also installs Ollama and a small language model (a few GB). The AI only rewrites the tone,
-  translates and writes short explanations. Every AI answer is checked and thrown away if it fails.
+- **Install with AI** (recommended for AI): installs Ollama and a local Qwen model sized for your computer
+  (qwen3.5:4b, about 3.3 GB; 9b on strong computers). No account, plan or key is needed, and it works offline.
+  The AI only rewrites the tone, translates and writes short explanations; every AI answer is checked and thrown
+  away if it fails. The proofs appear at once; the AI then polishes them one by one.
 - **Template mode only**: nothing extra. All recommendations work fully without AI.
 
-- **Use Ollama Cloud with an API key** (nothing is downloaded): before starting, open **`OLLAMA_API_KEY.txt`** in
+- **Use Ollama Cloud with an API key** (nothing is downloaded, but Ollama requires a paid plan for this): before starting, open **`OLLAMA_API_KEY.txt`** in
   the ClaimComposer folder, paste your key from [ollama.com/settings/keys](https://ollama.com/settings/keys) on the
   empty line and save. When the file holds a key, the launcher asks nothing and uses Ollama Cloud straight away.
   In this mode the sentences and the rule texts are sent to ollama.com; reviewer comments and your other answers never
   leave the computer. Keep the file private. Your Ollama account needs usage credits or a plan
   ([ollama.com/plans](https://ollama.com/plans)); without them the launcher shows the reason and the app continues in
-  template mode.
+  template mode. If the cloud asks for a plan, the launcher offers to switch to the local Qwen model instead.
 
 You can switch between the three later in **Settings > AI** (local model, cloud model; a key can also be saved there).
 For a copy with the cloud option preselected, build `dist/ClaimComposer-cloud.zip` with

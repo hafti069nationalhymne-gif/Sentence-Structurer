@@ -18,9 +18,12 @@ source = "local"
 # "auto": ClaimComposer picks the best-fitting model your key can use (see docs/MODEL_CHOICE.md).
 cloud_model = "auto"
 url = "http://127.0.0.1:11434"
-# Chosen by hardware during setup; see docs/MODEL_CHOICE.md.
+# Local Qwen model, chosen by hardware during setup (2b / 4b / 9b); see docs/MODEL_CHOICE.md.
 chat_model = "qwen3.5:4b"
-chat_model_large = "gpt-oss:20b"
+chat_model_large = "qwen3.5:9b"
+# Let the AI re-translate German drafts that nobody has reviewed yet. Off: in tests the prepared German
+# drafts read better than the small model's translations. Empty German texts are always translated.
+translate_unreviewed = false
 timeout_s = 90
 
 [app]

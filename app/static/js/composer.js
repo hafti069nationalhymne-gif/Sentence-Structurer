@@ -356,3 +356,25 @@ function futureCard(items) {
       (f.template_previews || []).length ? h("p", { class: "hint" }, "Wording available then: ", ...f.template_previews.map((t) => h("em", {}, t.text))) : null,
       (f.positions || []).length ? h("ul", { class: "positions" }, ...f.positions.map((p) => h("li", {}, h("b", {}, p.version), p.summary))) : null)));
 }
+
+
+// After the template result is shown, let the AI adjust tone, language and the explanation, one proof at a time.
+export async function polishWithAI() {
+  const slips = Array.from(document.querySelectorAll(".proof")).filter((s) => s._rec);
+  for (const slip of slips) {
+    if (!slip.isConnected) return;  // a new ticket was started
+    const row = slip.querySelector(".proof__head .row");
+    const tag = h("span", { class: "tag tag--ai", role: "status" }, "AI polishing…");
+    if (row) row.prepend(tag);
+    try {
+      const before = slip._rec.template_id;
+      const r = await api.adjust({ ...cleanAnswers(), language: slip._lang, tone: slip._tone }, before, slip._values);
+      if (slip.isConnected && r.ok && r.mode === "ai" && slip._rec.template_id === before) {
+        slip._rec = { ...r.recommendation, safest: slip._rec.safest };
+        fillSlip(slip, slip._rec, null);
+        api.event({ session_id: state.sessionId, ticket_id: state.ticketId, type: "ai_adjust",
+          payload: { template_id: before, sentence: slip._rec.sentence, ai_parts: slip._rec.ai_parts } });
+      } else tag.remove();
+    } catch { tag.remove(); }
+  }
+}

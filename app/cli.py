@@ -22,7 +22,8 @@ import sys
 
 from .config import USERDATA_DIR, load_settings, save_api_key, save_settings
 
-LARGE, SMALL = "gpt-oss:20b", "qwen3.5:4b"
+# Local models: Qwen 3.5 (verified in the Ollama library on 21 Nov 2026: 2b 2.7 GB, 4b 3.3 GB, 9b 6.6 GB).
+LARGE, SMALL, TINY = "qwen3.5:9b", "qwen3.5:4b", "qwen3.5:2b"
 
 
 def ram_gb() -> float:
@@ -67,10 +68,14 @@ def gpu_gb() -> float:
 
 
 def choose_model(ram: float | None = None, gpu: float | None = None) -> str:
-    """16 GB GPU memory or 32 GB RAM -> the larger model, otherwise the small one (see docs/MODEL_CHOICE.md)."""
+    """8 GB GPU memory or 32 GB RAM -> qwen3.5:9b; under 8 GB RAM -> qwen3.5:2b; otherwise qwen3.5:4b."""
     ram = ram_gb() if ram is None else ram
     gpu = gpu_gb() if gpu is None else gpu
-    return LARGE if (gpu >= 15.5 or ram >= 31.0) else SMALL
+    if gpu >= 7.5 or ram >= 31.0:
+        return LARGE
+    if 0 < ram < 7.5:
+        return TINY
+    return SMALL
 
 
 def main(argv: list[str]) -> int:
@@ -142,7 +147,7 @@ def main(argv: list[str]) -> int:
         return 2
     if cmd == "set-local":
         s = load_settings()
-        s.ai_source = "local"
+        s.ai_source, s.ollama_enabled = "local", True
         save_settings(s, USERDATA_DIR)
         print("ok")
         return 0

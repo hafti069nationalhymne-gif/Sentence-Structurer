@@ -88,6 +88,8 @@ function KeyFileHasKey {
 }
 
 function AskFirstRun {
+  # A remembered choice of the local AI wins (for example after Ollama Cloud asked for a plan).
+  if ((Test-Path $ChoiceFile) -and ((Get-Content $ChoiceFile -Raw).Trim() -eq "ai")) { return "ai" }
   # A key in OLLAMA_API_KEY.txt means: use Ollama Cloud, ask nothing, download no model.
   if ((KeyFileHasKey) -or $env:OLLAMA_API_KEY) {
     Say "Found an Ollama API key in OLLAMA_API_KEY.txt: using Ollama Cloud (no model download)."
@@ -103,7 +105,7 @@ function AskFirstRun {
   if (-not (HaveEnv)) { Write-Host "  - the app's Python packages                               (about 40 MB)" }
   Write-Host "  Optional AI for tone, translation and explanations:"
   if (-not (OllamaExe)) { Write-Host "  - Ollama, the local AI runtime                            (about 1.5 GB)" }
-  Write-Host "  - a language model: qwen3.5:4b (about 3.4 GB) or gpt-oss:20b on strong computers (about 14 GB)"
+  Write-Host "  - a Qwen language model: qwen3.5:4b (about 3.3 GB); qwen3.5:9b on strong computers (about 6.6 GB)"
   Write-Host "  Or use Ollama Cloud: paste your API key into OLLAMA_API_KEY.txt in this folder and start again."
   Write-Host "  Then nothing is downloaded, but sentences and rule texts are sent to ollama.com."
   Write-Host "  Free disk space here: $disk GB - memory: $ram GB"
@@ -182,10 +184,14 @@ function StartOllama {
 }
 
 function PullModel {
+  # A Qwen model sized for this computer; a model chosen earlier is kept if it is already downloaded.
+  Push-Location $Root
   $model = (& $script:Py -m app.cli choose-model) 2>$null
+  Pop-Location
   if (-not $model) { $model = "qwen3.5:4b" }
+  $model = "$model".Trim()
   $settings = Join-Path $UserData "settings.json"
-  if (Test-Path $settings) { try { $s = Get-Content $settings -Raw | ConvertFrom-Json; if ($s.chat_model) { $model = $s.chat_model } } catch {} }
+  if (Test-Path $settings) { try { $s = Get-Content $settings -Raw | ConvertFrom-Json; if ($s.chat_model -and (ModelPresent $s.chat_model)) { $model = $s.chat_model } } catch {} }
   if (ModelPresent $model) { Log "model $model present" }
   else {
     Say "Downloading the language model $model (this can take a while; progress below) ..."
@@ -299,9 +305,24 @@ function SetupCloud {
       Say "Ollama Cloud did not answer correctly:"
       $why = Select-String -Path $Log -Pattern "^FAIL " | Select-Object -Last 1
       if ($why) { Say ("  " + ($why.Line -replace "^FAIL [^:]*: ", "")) }
-      Say "ClaimComposer still works fully in template mode. Fix this and start again to use the AI."
+      Write-Host "You can use a local Qwen model instead. It runs on this computer, needs no plan or key,"
+      $a = Read-Host "and downloads about 3-7 GB once. Use the local AI instead? [Y/n]"
+      if ($a -eq "" -or $a -match "^(y|yes|j|ja)$") {
+        Set-Content -Path $ChoiceFile -Value "ai" -Encoding ASCII
+        Native $script:Py @("-m", "app.cli", "set-local") | Out-Null
+        $script:SwitchToLocal = $true
+      } else {
+        Say "ClaimComposer still works fully in template mode. Fix this and start again to use the AI."
+      }
     }
   } finally { Pop-Location }
+}
+$script:SwitchToLocal = $false
+
+function SetupLocal {
+  if (-not (InstallOllama)) { Say "Ollama could not be installed. ClaimComposer will run in template mode."; return }
+  if (-not (StartOllama)) { Say "Ollama did not start. ClaimComposer will run in template mode."; return }
+  if (-not (PullModel)) { Say "The model could not be downloaded. ClaimComposer will run in template mode." }
 }
 
 function Setup {
@@ -311,13 +332,16 @@ function Setup {
   InstallPython
   SyncEnv
   EnsureRunnablePython
-  if ($choice -eq "cloud") { SetupCloud; Log "setup finished"; return }
+  if ($choice -eq "cloud") {
+    SetupCloud
+    if ($script:SwitchToLocal) { SetupLocal }
+    Log "setup finished"; return
+  }
   Push-Location $Root
   if ($choice -ne "ai") { Native $script:Py @("-m", "app.cli", "set-ai", "off") | Out-Null; Pop-Location; return }
+  Native $script:Py @("-m", "app.cli", "set-local") | Out-Null
   Pop-Location
-  if (-not (InstallOllama)) { Say "Ollama could not be installed. ClaimComposer will run in template mode."; return }
-  if (-not (StartOllama)) { Say "Ollama did not start. ClaimComposer will run in template mode."; return }
-  if (-not (PullModel)) { Say "The model could not be downloaded. ClaimComposer will run in template mode." }
+  SetupLocal
   Log "setup finished"
 }
 

@@ -33,7 +33,10 @@ def api(tmp_path, monkeypatch):
     from fastapi.testclient import TestClient
     from app.main import create_app
 
-    return TestClient(create_app(tmp_path / "userdata"))
+    app = create_app(tmp_path / "userdata")
+    # Hermetic: never talk to an Ollama that happens to run on this machine.
+    app.state.settings["settings"].ollama_enabled = False
+    return TestClient(app)
 
 
 def segment_with(kb, rules, name=None):

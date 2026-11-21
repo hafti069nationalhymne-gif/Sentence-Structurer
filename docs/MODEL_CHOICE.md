@@ -79,3 +79,24 @@ choice resolves to the best-ranked model in the key's list.
 With the key used for testing (21 November 2026) the list held no Qwen model, so the ranking starts with
 `mistral-large-4`, then `gemma4:31b`, then `gpt-oss:20b`. A Qwen model is chosen automatically as soon as the key
 offers one. To force a model, set it in Settings > AI or `cloud_model` in `config.toml`.
+
+## Update: local Qwen model, tested for real (21 November 2026)
+
+Ollama Cloud needs a paid plan for chat calls, so the recommended setup is the **local** model again, now a Qwen
+model chosen by hardware (tags verified on ollama.com/library/qwen3.5):
+
+| Computer | Model | Download |
+|---|---|---|
+| 8 GB graphics memory or 32 GB RAM | `qwen3.5:9b` | 6.6 GB |
+| normal (8–31 GB RAM) | `qwen3.5:4b` (default) | 3.3 GB |
+| under 8 GB RAM | `qwen3.5:2b` | 2.7 GB |
+
+**Real test** with Ollama 0.40.17 and `qwen3.5:4b` on a 4-core CPU without a GPU:
+- JSON Schema test passed (7 s); `think: false` was accepted.
+- Tone and "Why it fits" outputs were accepted after the code checks; some were rejected and retried as designed
+  (e.g. an explanation that added numbers).
+- One rewrite dropped "Separate statement:" (needed for rule TX02). That phrase is now protected in both languages.
+- The model's German translations were worse than the prepared German drafts, so AI translation now runs only where
+  no German text exists (`translate_unreviewed = false` in `config.toml` restores the brief's behaviour).
+- A full ticket with AI took 60–100 s on that CPU. The app therefore shows the template proofs at once (about 0.5 s)
+  and the AI polishes one proof after another in the background ("AI polishing…").

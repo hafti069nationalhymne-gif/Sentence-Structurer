@@ -3,7 +3,7 @@ import { h, $, $$, clear, toast } from "./dom.js";
 import { api } from "./api.js";
 import { state, freshAnswers, cleanAnswers, labelOf } from "./state.js";
 import { initTicket, renderTicket, refreshRoute, go, resetTicketStages } from "./ticket.js";
-import { renderEmpty, renderResult, renderSetting, renderError } from "./composer.js";
+import { renderEmpty, renderResult, renderSetting, renderError, polishWithAI } from "./composer.js";
 
 const SUS_ITEMS = [
   "I think that I would like to use this system frequently.",
@@ -81,12 +81,20 @@ async function refreshTicketNo() {
 async function compose() {
   renderSetting();
   try {
-    const res = await api.recommend(cleanAnswers(), state.sessionId);
+    // The template result comes back at once; the local AI then polishes each proof in turn.
+    const aiOn = state.status && state.status.mode === "ai";
+    const res = await api.recommend(cleanAnswers(), state.sessionId, !aiOn);
     state.result = res;
     state.ticketId = res.ticket_id;
     $("#ticket-no").textContent = `No. ${String(res.ticket_id || state.ticketNo).padStart(4, "0")}`;
     renderTicket();
     renderResult(res, { animate: true });
+    if (aiOn && res.recommendations.length) {
+      const meta = document.querySelector(".result-head__meta");
+      const model = state.status.settings.active_model;
+      if (meta) meta.textContent = `${res.context.topic_label || ""} · template set in ${res.run.duration_ms} ms · AI (${model}) polishing…`;
+      polishWithAI().then(() => { if (meta && meta.isConnected) meta.textContent = meta.textContent.replace("polishing…", "done"); });
+    }
     if (state.settings.usability_mode) {
       api.usability({ session_id: state.sessionId, ticket_id: res.ticket_id, question_times: state.usability.times,
         back_steps: state.usability.backSteps, time_to_first_copy_ms: state.usability.firstCopyMs }).catch(() => null);

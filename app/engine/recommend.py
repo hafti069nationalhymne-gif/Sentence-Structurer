@@ -212,7 +212,8 @@ def ai_available(settings: Settings, client: OllamaClient | None) -> tuple[bool,
     return True, None
 
 
-def apply_ai(rec: dict, b: Built, ctx: Context, lib: Library, kb: Knowledge, client: OllamaClient, model: str) -> list[str]:
+def apply_ai(rec: dict, b: Built, ctx: Context, lib: Library, kb: Knowledge, client: OllamaClient, model: str,
+             translate_unreviewed: bool = False) -> list[str]:
     alog: list[str] = []
     t = b.match.template
     main_seg = b.segments[0]
@@ -226,7 +227,7 @@ def apply_ai(rec: dict, b: Built, ctx: Context, lib: Library, kb: Knowledge, cli
         return check_segments(segs, L, ctx, lib, kb, b.values)
 
     # translation: German requested and the German template text is missing or unreviewed
-    if ctx.language == "de" and (not t.text_de or not t.de_reviewed):
+    if ctx.language == "de" and (not t.text_de or (translate_unreviewed and not t.de_reviewed)):
         en_main = fill_text(t.text_en, slot_values(t, ctx, lib, "en"))
         de_values = slot_values(t, ctx, lib, "de")
 
@@ -313,7 +314,8 @@ def recommend(answers: dict, kb: Knowledge, lib: Library, settings: Settings,
             ctx.note("mode", f"AI via Ollama Cloud ({settings.active_model}): the sentences and rule texts were sent to "
                              "ollama.com. Comments and other answers stay on this computer.", None)
         for r in recs:
-            alog = apply_ai(r, built[r["template_id"]], ctx, lib, kb, client, settings.active_model)
+            alog = apply_ai(r, built[r["template_id"]], ctx, lib, kb, client, settings.active_model,
+                            settings.translate_unreviewed)
             ctx.log += alog
             errors = [l for l in alog if "model error" in l]
             if errors and not r["ai_adjusted"] and r["why_source"] != "ai":
@@ -450,7 +452,7 @@ def adjust_one(answers: dict, template_id: str, overrides: dict, kb: Knowledge, 
         if ctx.tone != "factual":
             note += " Tone changes need the local AI, so the template wording is kept."
         return {"ok": True, "recommendation": rec, "message": note, "mode": "template"}
-    alog = apply_ai(rec, b, ctx, lib, kb, client, settings.active_model)
+    alog = apply_ai(rec, b, ctx, lib, kb, client, settings.active_model, settings.translate_unreviewed)
     return {"ok": True, "recommendation": rec, "mode": "ai", "log": alog}
 
 

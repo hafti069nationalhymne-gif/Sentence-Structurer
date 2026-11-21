@@ -27,10 +27,11 @@ class Settings:
     ollama_enabled: bool = True
     ollama_url: str = "http://127.0.0.1:11434"
     chat_model: str = "qwen3.5:4b"
-    chat_model_large: str = "gpt-oss:20b"
+    chat_model_large: str = "qwen3.5:9b"
     ollama_timeout_s: float = 90.0
     ai_source: str = "local"          # "local" (Ollama on this computer) or "cloud" (Ollama Cloud with an API key)
     cloud_url: str = CLOUD_URL
+    translate_unreviewed: bool = False  # AI-translate unreviewed German drafts too (tests showed the drafts read better)
     cloud_model: str = "auto"         # "auto" = best model for this app among those the key can use
     cloud_model_resolved: str | None = None  # what "auto" resolved to (not saved)
     review_mode: bool = False
@@ -166,6 +167,7 @@ def load_settings(config_path: Path | None = None, userdata: Path | None = None,
         src = str(oll.get("source", s.ai_source))
         s.ai_source = src if src in ("local", "cloud") else "local"
         s.cloud_model = str(oll.get("cloud_model", s.cloud_model))
+        s.translate_unreviewed = bool(oll.get("translate_unreviewed", s.translate_unreviewed))
         # The cloud URL is fixed: the API key may only ever be sent to Ollama Cloud.
         s.ollama_timeout_s = float(oll.get("timeout_s", s.ollama_timeout_s))
         s.review_mode = bool(app.get("review_mode", s.review_mode))
