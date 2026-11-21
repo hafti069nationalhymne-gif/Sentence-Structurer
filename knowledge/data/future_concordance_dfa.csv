@@ -1,0 +1,22 @@
+﻿rule_ids,topic,current_provision,current_chunk_id,dfa_provision,dfa_chunk_id,comparison_basis,word_similarity,change
+G01,Environmental claim (definition),UCPD Art. 2(o),EMPCO-UCPD-ART2-O,DFA Art. 3(25),DFA-ART-003-D25,Operative text compared,1.0,Same wording
+P01,Generic environmental claim (definition),UCPD Art. 2(p),EMPCO-UCPD-ART2-P,DFA Art. 3(26),DFA-ART-003-D26,Operative text compared,1.0,Same wording
+P04,Sustainability label (definition),UCPD Art. 2(q),EMPCO-UCPD-ART2-Q,DFA Art. 3(30),DFA-ART-003-D30,Operative text compared,1.0,Same wording
+P04,Certification scheme (definition),UCPD Art. 2(r),EMPCO-UCPD-ART2-R,DFA Art. 3(22),DFA-ART-003-D22,Operative text compared,0.977,'(i)' becomes '(a)'; '(ii)' becomes '(b)'; '(iii)' becomes '(c)'; '(iv)' becomes '(d)'
+P01,Recognised excellent environmental performance (definition),UCPD Art. 2(s),EMPCO-UCPD-ART2-S,DFA Art. 3(27),DFA-ART-003-D27,Operative text compared,1.0,Same wording
+M03,Misleading environmental information,UCPD Art. 6(1)(b),EMPCO-UCPD-ART6-1B,DFA Art. 6(1)(b),DFA-ART-006-01,Operative text compared,0.966,'such as' becomes 'including'
+M01,Future environmental performance,UCPD Art. 6(2)(d),EMPCO-UCPD-ART6-2D,DFA Art. 6(2)(d),DFA-ART-006-02,Operative text compared,0.976,'such as' becomes 'including'
+M02,Irrelevant benefits,UCPD Art. 6(2)(e),EMPCO-UCPD-ART6-2E,DFA Art. 6(2)(e),DFA-ART-006-02,Operative text compared,1.0,Same wording
+M07,Sustainability comparison services,UCPD Art. 7(7),EMPCO-UCPD-ART7-7,DFA Art. 7(8),DFA-ART-007-08,Operative text compared,0.981,'such as' becomes 'including'
+P04,Label without certification scheme,UCPD Annex I point 2a,EMPCO-UCPD-ANX-2A,DFA recital 99; Annex I not uploaded,DFA-REC-099,Recital only,,The recital keeps this ban. Check the exact wording and point number in DFA Annex I.
+P01,Generic claim without recognised excellent performance,UCPD Annex I point 4a,EMPCO-UCPD-ANX-4A,DFA recital 101; Annex I not uploaded,DFA-REC-101,Recital only,,The recital keeps this ban. Check the exact wording and point number in DFA Annex I.
+P02,Whole product or business claim,UCPD Annex I point 4b,EMPCO-UCPD-ANX-4B,DFA recital 103; Annex I not uploaded,DFA-REC-103,Recital only,,The recital keeps this ban. Check the exact wording and point number in DFA Annex I.
+P03; CR03,Product claim based on offsetting,UCPD Annex I point 4c,EMPCO-UCPD-ANX-4C,DFA recital 104; Annex I not uploaded,DFA-REC-104,Recital only,,The recital keeps this ban. Check the exact wording and point number in DFA Annex I.
+P05,Legal requirement as a distinctive feature,UCPD Annex I point 10a,EMPCO-UCPD-ANX-10A,DFA recital 107; Annex I not uploaded,DFA-REC-107,Recital only,,The recital keeps this ban. Check the exact wording and point number in DFA Annex I.
+P09,Hidden effect of a software update,UCPD Annex I point 23d,EMPCO-UCPD-ANX-23D,DFA recital 113; Annex I not uploaded,DFA-REC-113,Recital only,,The recital keeps this ban. Check the exact wording and point number in DFA Annex I.
+P09,Unnecessary software update,UCPD Annex I point 23e,EMPCO-UCPD-ANX-23E,DFA recital 114; Annex I not uploaded,DFA-REC-114,Recital only,,The recital keeps this ban. Check the exact wording and point number in DFA Annex I.
+P09,Feature limiting durability,UCPD Annex I point 23f,EMPCO-UCPD-ANX-23F,DFA recital 115; Annex I not uploaded,DFA-REC-115,Recital only,,The recital keeps this ban. Check the exact wording and point number in DFA Annex I.
+P07,False durability claim,UCPD Annex I point 23g,EMPCO-UCPD-ANX-23G,DFA recital 116; Annex I not uploaded,DFA-REC-116,Recital only,,The recital keeps this ban. Check the exact wording and point number in DFA Annex I.
+P09,Early replacement of consumables,UCPD Annex I point 23i,EMPCO-UCPD-ANX-23I,DFA recital 117; Annex I not uploaded,DFA-REC-117,Recital only,,The recital keeps this ban. Check the exact wording and point number in DFA Annex I.
+P09,Third-party consumables and parts,UCPD Annex I point 23j,EMPCO-UCPD-ANX-23J,DFA recital 118; Annex I not uploaded,DFA-REC-118,Recital only,,The recital keeps this ban. Check the exact wording and point number in DFA Annex I.
+P08,Goods presented as repairable when they are not,UCPD Annex I point 23h,EMPCO-UCPD-ANX-23H,Annex I not uploaded,,Not confirmed,,No matching recital was found. Check DFA Annex I.

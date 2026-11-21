@@ -1,0 +1,430 @@
+{
+ "_doc": "Curated topic-to-rule map. claim_objects come from claim_object_routing.csv; claim_objects_if_packaging are added when the scope is packaging or the product is packaging. product_rules are the ECLASS product rules that matter for the topic (they apply only if the segment routes them). general_rules are the routing=all rules most relevant to the topic (all routing=all rules are candidates for every topic). future_rules are the FW rules that produce future notes.",
+ "general_benefit": {
+  "claim_objects": [
+   "eco_label"
+  ],
+  "product_rules": [],
+  "general_rules": [
+   "P01",
+   "M03",
+   "M04",
+   "M05",
+   "M09",
+   "D01",
+   "B01",
+   "E01"
+  ],
+  "future_rules": [
+   "FW01",
+   "FW02"
+  ]
+ },
+ "recycled_content": {
+  "claim_objects": [
+   "recycled_content"
+  ],
+  "claim_objects_if_packaging": [
+   "packaging"
+  ],
+  "product_rules": [
+   "PK01",
+   "PK02",
+   "PK05",
+   "BA01",
+   "TX01",
+   "TX02"
+  ],
+  "general_rules": [
+   "P02",
+   "M03",
+   "M06",
+   "E01",
+   "B01"
+  ],
+  "future_rules": [
+   "FW01",
+   "FW02",
+   "FW03"
+  ]
+ },
+ "recyclability": {
+  "claim_objects": [
+   "recyclability"
+  ],
+  "claim_objects_if_packaging": [
+   "packaging"
+  ],
+  "product_rules": [
+   "PK01",
+   "PK02",
+   "PK03"
+  ],
+  "general_rules": [
+   "M03",
+   "P02",
+   "E01",
+   "B01"
+  ],
+  "future_rules": [
+   "FW01",
+   "FW02"
+  ]
+ },
+ "compostable": {
+  "claim_objects": [],
+  "claim_objects_if_packaging": [
+   "packaging"
+  ],
+  "product_rules": [
+   "PK04"
+  ],
+  "general_rules": [
+   "M03",
+   "P01",
+   "E01",
+   "B01"
+  ],
+  "future_rules": [
+   "FW01",
+   "FW02"
+  ]
+ },
+ "packaging_reduction": {
+  "claim_objects": [
+   "packaging"
+  ],
+  "product_rules": [
+   "PK01",
+   "PK02"
+  ],
+  "general_rules": [
+   "M03",
+   "M06",
+   "P02",
+   "E01",
+   "B02"
+  ],
+  "future_rules": [
+   "FW01",
+   "FW02",
+   "FW03"
+  ]
+ },
+ "product_carbon_footprint": {
+  "claim_objects": [
+   "footprint_study"
+  ],
+  "product_rules": [
+   "BA01",
+   "CN01",
+   "CA01",
+   "TR01"
+  ],
+  "general_rules": [
+   "M03",
+   "P03",
+   "M06",
+   "E01",
+   "B01"
+  ],
+  "future_rules": [
+   "FW01",
+   "FW02",
+   "FW03"
+  ]
+ },
+ "climate_neutral_or_offset": {
+  "claim_objects": [
+   "company_climate",
+   "carbon_removal"
+  ],
+  "product_rules": [],
+  "general_rules": [
+   "P03",
+   "M08",
+   "D01",
+   "E01",
+   "B01"
+  ],
+  "future_rules": [
+   "FW01",
+   "FW02",
+   "FW06"
+  ]
+ },
+ "carbon_removal": {
+  "claim_objects": [
+   "carbon_removal"
+  ],
+  "product_rules": [],
+  "general_rules": [
+   "M03",
+   "M08",
+   "E01"
+  ],
+  "future_rules": [
+   "FW01",
+   "FW02",
+   "FW06"
+  ]
+ },
+ "company_climate_target": {
+  "claim_objects": [
+   "company_climate"
+  ],
+  "product_rules": [],
+  "general_rules": [
+   "M01",
+   "M08",
+   "E01",
+   "B01"
+  ],
+  "future_rules": [
+   "FW01",
+   "FW02",
+   "FW04"
+  ]
+ },
+ "emission_reduction": {
+  "claim_objects": [
+   "company_climate",
+   "footprint_study"
+  ],
+  "product_rules": [
+   "CA01",
+   "TR01",
+   "BA01"
+  ],
+  "general_rules": [
+   "M03",
+   "M06",
+   "P02",
+   "E01",
+   "B01"
+  ],
+  "future_rules": [
+   "FW01",
+   "FW02",
+   "FW03"
+  ]
+ },
+ "renewable_electricity": {
+  "claim_objects": [
+   "renewable_electricity"
+  ],
+  "product_rules": [
+   "RE01",
+   "RE02"
+  ],
+  "general_rules": [
+   "P02",
+   "M03",
+   "E01"
+  ],
+  "future_rules": [
+   "FW01",
+   "FW02"
+  ]
+ },
+ "energy_efficiency": {
+  "claim_objects": [],
+  "product_rules": [
+   "EN01",
+   "EN02",
+   "EN03",
+   "TY01",
+   "TY02",
+   "CA01"
+  ],
+  "general_rules": [
+   "P01",
+   "M03",
+   "E01"
+  ],
+  "future_rules": [
+   "FW01",
+   "FW02",
+   "FW05"
+  ]
+ },
+ "durability": {
+  "claim_objects": [
+   "durability_guarantee"
+  ],
+  "product_rules": [
+   "BA01"
+  ],
+  "general_rules": [
+   "P07",
+   "P09",
+   "E01",
+   "B01"
+  ],
+  "future_rules": [
+   "FW01",
+   "FW02"
+  ]
+ },
+ "repairability": {
+  "claim_objects": [
+   "repair"
+  ],
+  "product_rules": [
+   "EN03"
+  ],
+  "general_rules": [
+   "P08",
+   "P09",
+   "E01",
+   "B01"
+  ],
+  "future_rules": [
+   "FW01",
+   "FW02"
+  ]
+ },
+ "free_from_substances": {
+  "claim_objects": [],
+  "product_rules": [
+   "EE01",
+   "CH02",
+   "CS01",
+   "CS02",
+   "DT01",
+   "DT02",
+   "M10",
+   "BI01",
+   "BI02",
+   "PP01",
+   "PP02"
+  ],
+  "general_rules": [
+   "P05",
+   "M02",
+   "E01",
+   "B01"
+  ],
+  "future_rules": [
+   "FW01",
+   "FW02"
+  ]
+ },
+ "organic": {
+  "claim_objects": [],
+  "product_rules": [
+   "OR01",
+   "OR02",
+   "OR03",
+   "TX01",
+   "TX02"
+  ],
+  "general_rules": [
+   "M05",
+   "E01"
+  ],
+  "future_rules": [
+   "FW01",
+   "FW02",
+   "FW07"
+  ]
+ },
+ "deforestation_free": {
+  "claim_objects": [],
+  "product_rules": [
+   "WD01"
+  ],
+  "general_rules": [
+   "P05",
+   "E01"
+  ],
+  "future_rules": [
+   "FW01",
+   "FW02"
+  ]
+ },
+ "fibre_composition": {
+  "claim_objects": [],
+  "product_rules": [
+   "TX01",
+   "TX02"
+  ],
+  "general_rules": [
+   "E01"
+  ],
+  "future_rules": [
+   "FW01",
+   "FW02"
+  ]
+ },
+ "eco_label": {
+  "claim_objects": [
+   "eco_label"
+  ],
+  "product_rules": [],
+  "general_rules": [
+   "P04",
+   "P06",
+   "E01",
+   "B01"
+  ],
+  "future_rules": [
+   "FW01",
+   "FW02",
+   "FW07"
+  ]
+ },
+ "emas": {
+  "claim_objects": [
+   "emas"
+  ],
+  "product_rules": [],
+  "general_rules": [
+   "E01"
+  ],
+  "future_rules": [
+   "FW01",
+   "FW02",
+   "FW07"
+  ]
+ },
+ "taxonomy": {
+  "claim_objects": [
+   "taxonomy"
+  ],
+  "product_rules": [],
+  "general_rules": [
+   "E01"
+  ],
+  "future_rules": [
+   "FW01",
+   "FW02"
+  ]
+ },
+ "reporting_status": {
+  "claim_objects": [
+   "reporting_status"
+  ],
+  "product_rules": [],
+  "general_rules": [
+   "E01"
+  ],
+  "future_rules": []
+ },
+ "transport_emissions": {
+  "claim_objects": [],
+  "product_rules": [
+   "TR01"
+  ],
+  "general_rules": [
+   "M03",
+   "E01",
+   "B01"
+  ],
+  "future_rules": [
+   "FW01",
+   "FW02",
+   "FW03"
+  ]
+ }
+}

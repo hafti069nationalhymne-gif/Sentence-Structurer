@@ -1,0 +1,55 @@
+{
+  "_doc": "Curated status of every trigger of a prohibited or case_by_case rule. Default: banned (a wording to avoid; shown in 'Don't say' and rejected in sentences). conditional: allowed only when the named lift holds (see lifts.json). detector: a topic keyword that only tells the rules where to look (e.g. 'tyre', 'paint'); it is not a wording to avoid and is hidden from 'Don't say'. A detector of a prohibited rule may still appear in a sentence only under its lift. rule_overrides take precedence ('RULE:phrase').",
+  "detector": {
+    "adhesive": null, "chemical": null, "cleaner": null, "coating": null, "degreaser": null, "mixture": null,
+    "paint": null, "solvent": null, "tire": null, "tyre": null, "reifen": null, "rolling resistance": null,
+    "co2 emissions": null, "electric car": null, "fuel consumption": null, "new car": null, "passenger car": null,
+    "antibacterial": null, "antimicrobial": null, "biocidal": null, "insect spray": null, "insecticide": null,
+    "rodenticide": null, "biocide": "product_type", "disinfectant": "product_type",
+    "herbicide": "product_type", "pesticide": "product_type", "fungicide": "product_type", "plant protection": "product_type",
+    "software update": null, "consumable": null,
+    "food": null, "regional": null, "packaging": null, "pcr": null, "symbol": null, "packaging label": null,
+    "sorting symbol": null, "energy class": null, "energy label": null, "class a": null,
+    "digital product passport": null, "dpp": null, "ce marking": null, "tyre label": null, "tire label": null,
+    "electricity tariff": null, "stromtarif": null, "power tariff": null, "electricity supplier": null, "stromanbieter": null,
+    "comparison tool": null, "compare products": null, "ranking": null, "website": null, "competitor": null,
+    "independent repair": null, "third-party repair": null, "carbon removal": null, "carbon removals": null,
+    "carbon farming": null, "carbon storage": null, "taxonomy-eligible": null, "taxonomy eligible": null,
+    "eligible under the eu taxonomy": null, "eligible under the taxonomy": null, "taxonomiefähig": null
+  },
+  "conditional": {
+    "cert": ["certified", "certificate", "blue angel", "stores carbon", "co2 removed", "permanent removal",
+             "permanently removed", "permanently stores"],
+    "label": ["label"],
+    "ecolabel": ["eu ecolabel", "eu-ecolabel", "ecolabel", "eu flower", "euroblume", "eu-umweltzeichen", "eu umweltzeichen"],
+    "emas": ["emas", "emas-registered", "emas registered", "emas logo"],
+    "organic": ["organic", "organically", "biologisch", "ökologisch", "öko", "bio", "made with organic", "with organic",
+                "organic ingredients", "organic recipe", "contains organic", "eu organic logo", "euro-leaf", "organic logo",
+                "bio-siegel", "organic certified", "certified organic", "100% organic cotton", "100 % organic cotton"],
+    "measured": ["renewable", "recycled", "post-consumer", "recycled content", "recycled plastic", "reusable", "refillable",
+                 "reduced emissions", "recycled fibre", "cut our emissions", "emissions down by", "emissions reduced",
+                 "emissions reduction of", "lowered our emissions", "reduced emissions by", "reduced our emissions",
+                 "reduction in emissions", "spare parts", "can be repaired", "100 % cotton", "100% cotton",
+                 "100% recycled polyester", "100 % recycled polyester", "pure cotton", "pure wool", "all cotton"],
+    "tested": ["compostable", "cycles", "years of use", "recyclable"],
+    "scoped": ["recycled material", "renewable energy", "100% renewable", "100 % renewable", "our company"],
+    "compared": ["% less", "% lower", "compared to", "compared with", "lower emissions", "less plastic", "lower emissions than"],
+    "company": ["net zero", "net-zero", "offset"],
+    "plan": ["by 2025", "by 2030", "by 2035", "by 2040", "by 2045", "by 2050", "we will", "we aim", "our goal",
+             "our target", "on the way to", "committed to", "net zero by"]
+  },
+  "rule_overrides": {
+    "PK01:recyclable": "banned",
+    "PK02:recyclable": "banned",
+    "M05:bio": "banned",
+    "OR01:eco": "banned",
+    "M10:ecological": "banned",
+    "P01:ecological": "banned",
+    "P01:green": "banned",
+    "EM04:whole company": "banned"
+  },
+  "_reasons": {
+    "detector": "Topic keyword used by the rule to recognise the product or claim type. Not a wording to avoid.",
+    "banned": "Wording that the rule bans or treats as misleading in this context."
+  }
+}

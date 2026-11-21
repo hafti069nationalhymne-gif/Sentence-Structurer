@@ -1,0 +1,41 @@
+﻿eclass_segment,segment_name,list_ids,product_rule_ids,note
+13,Development (Service),,,Services: core rules only
+14,Logistics (Service),S28,TR01,Transport emission rule TR01 added. Otherwise core rules only
+15,Maintenance (Service),,,Services: core rules only
+16,"Food, beverage, tobacco",S01; S20; S21; S22,PK01; PK02; PK03; PK04; PK05; FD01; OR01; OR02; OR03; WD01,
+17,"Machine, device (for special applications)",S03; S04; S09; S10; S11; S12,EN03; EE01; CH02,WEEE/RoHS only if electrical
+18,"Equipment f. mining, metallurgical plant, rolling mill a. foundry",S04; S12,EN03; CH02,
+19,"Information, communication and media technology",S03; S04; S05; S06; S07; S08; S09; S10; S11; S12,EN01; EN02; EN03; CA01; BA01; EE01; CH02,
+20,Packing material,S01; S02; S12; S22,PK01; PK02; PK03; PK04; PK05; CH02; WD01,EUDR for paper and wood packaging
+21,"Manufacturing facility, workshop equipment, tool",S07; S08; S09; S10; S11; S12,BA01; EE01; CH02,Batteries and WEEE for powered tools
+22,Construction technology,S12; S13; S19; S22,M10; CH01; CH02; CN01; WD01,EUDR for wood products
+23,"Machine element, fixing, mounting",S03; S12,EN03; CH02,"ESPR iron, steel and aluminium acts pending"
+24,"Office product, facility and technic, papeterie",S05; S09; S10; S11; S22,EN01; EN02; EE01; WD01,EUDR for paper
+25,General service,,,Services: core rules only
+26,"Energy, extraction product, secondary raw material and residue",S25; S26,RE01; RE02,
+27,"Electric engineering, automation, process control engineering",S03; S04; S05; S06; S07; S08; S09; S10; S11; S12,EN01; EN02; EN03; CA01; BA01; EE01; CH02,Batteries sit in main group 27-05
+28,Automotive technology,S07; S08; S12; S24,TY01; TY02; BA01; CH02,Tyres are an ESPR priority group
+29,"Home economics, Home technology",S03; S04; S05; S06; S07; S08; S09; S10; S11; S12; S27,EN01; EN02; EN03; CA01; BA01; EE01; CH02; DU01,
+30,"Auxiliary supply, additive, cleaning agent",S12; S13; S14; S16,M10; CH01; CH02; BI01; BI02; DT01; DT02,Class-level check needed: detergent vs biocide
+31,Polymer,S01; S12; S13,M10; PK01; PK02; PK03; PK04; PK05; CH01; CH02,PPWR if sold as packaging
+32,"Laboratory material, Laboratory technology",S09; S10; S11; S12; S13,M10; EE01; CH01; CH02,
+33,Installation (complete),S04; S09; S10; S11; S19,EN03; EE01; CN01,Depends on installed product
+34,"Medicine, medical technology",S09; S10; S11; S12,EE01; CH02,Check medical-device advertising rules separately
+35,"Semifinished product, material",S03; S12; S22,EN03; CH02; WD01,"ESPR iron, steel and aluminium acts pending"
+36,"Machine, apparatus",S03; S04; S09; S10; S11; S12,EN03; EE01; CH02,
+37,Industrial piping,S12; S19,CH02; CN01,
+38,Inorganic Chemical,S12; S13; S14,M10; CH01; CH02; BI01; BI02,BPR only if biocidal
+39,Organic Chemical,S12; S13; S14,M10; CH01; CH02; BI01; BI02,BPR only if biocidal
+40,"Occupational safety, accident prevention",S12; S18,CH02; TX01; TX02,
+41,Marketing,,,Core rules only
+42,In-vitro diagnostic,S09; S10; S11; S12,EE01; CH02,Check IVD advertising rules separately
+43,Optics,S09; S10; S11; S12,EE01; CH02,
+44,Motor Vehicle,S07; S08; S23; S24,TY01; TY02; CA01; BA01,
+45,"Human and veterinary drug, pesticide as well as active ingredient",S13; S14; S15,M10; CH01; BI01; BI02; PP01; PP02,Medicinal advertising law is outside this list
+46,Clothing and textile,S03; S12; S18,EN03; CH02; TX01; TX02,ESPR textile act expected 2027
+47,Body care and personal hygiene,S01; S13; S17,M10; PK01; PK02; PK03; PK04; PK05; CH01; CS01; CS02; CS03,
+48,"Sport, playing, leisure",S07; S08; S12; S18,BA01; CH02; TX01; TX02,Toy safety rules are outside this list
+49,Public safety and military technology,S12,CH02,
+50,Interior furnishing,S03; S12; S18; S22,EN03; CH02; TX01; TX02; WD01,ESPR furniture act pending
+51,Fluid power,S04; S12,EN03; CH02,
+90,Interim class (unspecified),,,Route to manual review

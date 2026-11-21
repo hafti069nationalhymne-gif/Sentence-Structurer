@@ -1,0 +1,9 @@
+.venv/
+.tools/
+logs/
+userdata/
+dist/
+__pycache__/
+*.pyc
+.pytest_cache/
+library/drafts/

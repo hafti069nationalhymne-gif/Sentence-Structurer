@@ -1,0 +1,58 @@
+{
+  "_doc": "A lift is a condition under which a trigger phrase may appear. Each lift has alternatives; one alternative must hold. Keys: evidence_types, scope, comparison, channels, domains (answers) and kinds (template kind). Used by library check 3, the engine validator and the 'Don't say' filter.",
+  "lifts": {
+    "cert": {
+      "label": "Only with a certificate from a scheme that meets the legal criteria for certification schemes",
+      "alternatives": [{"evidence_types": ["third_party_certificate", "eu_ecolabel_licence", "emas_registration"]}]
+    },
+    "label": {
+      "label": "Only for a certified label or an official, mandatory label",
+      "alternatives": [
+        {"evidence_types": ["third_party_certificate", "eu_ecolabel_licence", "emas_registration"]},
+        {"kinds": ["official_info", "mandatory_statement"]}
+      ]
+    },
+    "ecolabel": {
+      "label": "Only with a valid EU Ecolabel licence for this product",
+      "alternatives": [{"evidence_types": ["eu_ecolabel_licence"]}]
+    },
+    "emas": {
+      "label": "Only with a valid EMAS registration, for the organisation or site, never on products or packaging",
+      "alternatives": [{"evidence_types": ["emas_registration"], "scope": ["company", "site"],
+                        "channels": ["advertising", "website", "social_media", "technical_material", "sustainability_report"]}]
+    },
+    "organic": {
+      "label": "Only for certified organic production under Regulation (EU) 2018/848",
+      "alternatives": [{"evidence_types": ["third_party_certificate"], "domains": ["FOOD", "ORGANIC", "TEXTILE"]}]
+    },
+    "measured": {
+      "label": "Only with the figure stated and evidence held",
+      "alternatives": [{"evidence_types": ["third_party_certificate", "eu_ecolabel_licence", "emas_registration", "lca_study", "test_report", "supplier_declaration", "internal_measurement"]}]
+    },
+    "tested": {
+      "label": "Only with a test report or certificate for the stated conditions",
+      "alternatives": [{"evidence_types": ["test_report", "third_party_certificate"]}]
+    },
+    "scoped": {
+      "label": "Only when the part, site or share covered is stated",
+      "alternatives": [{"scope": ["part", "packaging", "site"]}]
+    },
+    "compared": {
+      "label": "Only with a named comparator, the same method and evidence",
+      "alternatives": [{"comparison": ["previous_model", "competitor", "industry_average"],
+                        "evidence_types": ["third_party_certificate", "lca_study", "test_report", "supplier_declaration", "internal_measurement"]}]
+    },
+    "company": {
+      "label": "Only as a company-level statement, never about a product",
+      "alternatives": [{"scope": ["company", "site"]}]
+    },
+    "plan": {
+      "label": "Only with a public implementation plan, interim targets and independent verification",
+      "alternatives": [{"kinds": ["claim"], "evidence_types": ["third_party_certificate", "lca_study", "internal_measurement"]}]
+    },
+    "product_type": {
+      "label": "Only to name the authorised product type in neutral or mandatory wording",
+      "alternatives": [{"kinds": ["mandatory_statement", "legal_neutral", "official_info", "cautious"]}]
+    }
+  }
+}
