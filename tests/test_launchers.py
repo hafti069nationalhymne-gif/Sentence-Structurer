@@ -55,7 +55,8 @@ def test_powershell_static_check():
     code = "\n".join(l.split("#")[0] if not l.strip().startswith("#") else "" for l in code.splitlines())
     for a, b in ("{}", "()", "[]"):
         assert code.count(a) == code.count(b), f"unbalanced {a}{b}"
-    for needed in ("irm https://astral.sh/uv/install.ps1 | iex", "UV_INSTALL_DIR", "python install 3.12", "sync --frozen",
+    for needed in ("irm https://astral.sh/uv/install.ps1 | iex", "UV_INSTALL_DIR", '@("python", "install", "3.12")',
+                   '@("sync", "--frozen", "--no-dev", "--python", "3.12")',
                    "winget install --id Ollama.Ollama -e", "OllamaSetup.exe", "--open", "LOCALAPPDATA", "setup.log"):
         assert needed in src, needed
     assert "$args" not in src.replace("$arguments", "")
