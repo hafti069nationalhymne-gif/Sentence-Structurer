@@ -20,6 +20,9 @@ export UV_PYTHON_INSTALL_DIR="$CC_TOOLS/python"
 export UV_CACHE_DIR="$CC_TOOLS/uv-cache"
 export UV_PROJECT_ENVIRONMENT="$CC_ROOT/.venv"
 export UV_NO_MODIFY_PATH=1
+# Use only the Python that uv installs into .tools/python; Pythons on the PATH are ignored and never changed.
+export UV_PYTHON_PREFERENCE="${CC_UV_PYTHON_PREFERENCE:-only-managed}"
+export UV_PYTHON_BIN_DIR="$CC_TOOLS/python-bin"
 export PYTHONUTF8=1
 UV="$UV_INSTALL_DIR/uv"
 

@@ -77,3 +77,15 @@ def test_release_zip_excludes_local_state(tmp_path):
     assert not any(re.search(r"/(\.venv|\.tools|logs|userdata|\.git)/", n) for n in names)
     info = z.getinfo("ClaimComposer/start_claimcomposer.sh")
     assert (info.external_attr >> 16) & 0o111
+
+
+def test_windows_setup_survives_stderr_and_broken_pythons():
+    """Regression: a broken python3.12.exe on PATH made `uv python find` write to stderr, which aborted the
+    script under $ErrorActionPreference = "Stop" in Windows PowerShell 5.1."""
+    src = (ROOT / "installer/setup.ps1").read_text(encoding="utf-8")
+    assert '$ErrorActionPreference = "Stop"' not in src and '$ErrorActionPreference = "Continue"' in src
+    assert "*>" not in src, "native output must go through Native, not *> redirects"
+    assert 'UV_PYTHON_PREFERENCE = "only-managed"' in src and "UV_PYTHON_BIN_DIR" in src
+    assert "function Native" in src
+    sh = (ROOT / "installer/common.sh").read_text()
+    assert "only-managed" in sh and "UV_PYTHON_BIN_DIR" in sh
