@@ -1,0 +1,11 @@
+Explain in at most two short, plain sentences why the recommended sentence fits the checked requirements.
+Use only the rule requirements and the quoted passages given below. Do not give legal advice.
+Never write "compliant", "guaranteed" or "legal". Write "fits the checked requirements" if you need a conclusion.
+Cite the chunk_id values of the passages you used. Only use chunk_id values that appear below.
+{feedback}
+<data>
+Recommended sentence: {sentence}
+
+Rules and passages:
+{passages}
+</data>

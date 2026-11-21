@@ -1,0 +1,157 @@
+# Scenario tests from the brief (section 10). Segments are chosen by the rules they route to
+# (`segment_rules`, optional `segment_name`), never by a hard-coded number.
+# Checks:
+#   min_recs / max_recs                 number of recommendations
+#   some_sentence_contains_all          one sentence contains all of these strings
+#   every_sentence_contains             every sentence contains each string
+#   no_sentence_contains_words          case-insensitive whole words that never appear
+#   no_figures                          no sentence contains a figure
+#   any_rec_cites / no_rec_cites        rule ids among the recommendations' cited rules
+#   some_template                       one of these templates is recommended
+#   dont_say_includes                   phrases in the 'Don't say' list
+#   notes_rules                         rule ids of notes shown
+#   future_rules / not_future_rules     rule ids in future_requirements
+#   what_to_obtain                      true = must be filled
+#   language                            language of every sentence; german_tag = unreviewed tag shown
+#   dont_say_language                   language of the trigger phrases in 'Don't say'
+
+- name: textile recycled content on the label
+  answers: {segment_rules: [TX01, TX02, EN03], audience: consumers, channel: label, topic: recycled_content, scope: part,
+            part: outer fabric, evidence: third_party_certificate,
+            facts: {X: "60", material: polyester, scheme: Global Recycled Standard, ID: GRS-2025-0042, origin: post-consumer}}
+  expect:
+    min_recs: 2
+    some_sentence_contains_all: ["60 %", "outer fabric", "GRS-2025-0042"]
+    any_rec_cites: [FP04]
+    no_sentence_contains_words: [eco, sustainable, sustainably]
+
+- name: general benefit without evidence
+  answers: {segment_rules: [TX01, TX02, EN03], audience: consumers, channel: advertising, topic: general_benefit,
+            scope: whole_product, evidence: none_yet}
+  expect:
+    max_recs: 0
+    notes_rules: [P01]
+    dont_say_includes: [eco-friendly, environmentally friendly]
+    what_to_obtain: true
+
+- name: packaging recyclability, bottle with cap excluded
+  answers: {segment_rules: [PK01, PK02], segment_name: Packing, audience: consumers, channel: packaging, topic: recyclability,
+            scope: part, part: bottle body, excluded: cap, evidence: test_report, method: ppwr_not_adopted,
+            facts: {collection_stream: yellow_bin}}
+  expect:
+    min_recs: 2
+    every_sentence_contains: ["bottle body", "cap is not included"]
+    any_rec_cites: [PK02]
+    notes_rules: [PK01]
+
+- name: company offset claim to consumers
+  answers: {segment: company, audience: consumers, channel: advertising, topic: climate_neutral_or_offset, scope: company,
+            evidence: internal_measurement, facts: {project_type: reforestation, Y: "1200"}}
+  expect:
+    min_recs: 2
+    no_sentence_contains_words: [neutral, climate-neutral, carbon-neutral, net-zero]
+    some_template: [CN-FIN-03, CN-FIN-01]
+    any_rec_cites: [P03, CR03]
+
+- name: company offset claim to businesses only
+  answers: {segment: company, audience: business, channel: advertising, topic: climate_neutral_or_offset, scope: company,
+            evidence: internal_measurement, facts: {project_type: reforestation, Y: "1200"}}
+  expect:
+    min_recs: 2
+    no_rec_cites: [P03, CR03]
+    any_rec_cites: [RP07]
+    every_rec_cites_one_of: [RP07]
+
+- name: biocide advertising
+  answers: {segment_rules: [BI01, BI02], product_type: biocide, audience: consumers, channel: advertising,
+            topic: recycled_content, scope: packaging, part: bottle body, evidence: supplier_declaration, method: mass_balance,
+            facts: {X: "30", material: HDPE, biocide_type: disinfectant, authorised_use: surface}}
+  expect:
+    min_recs: 1
+    every_sentence_contains: ["Use biocides safely. Always read the label and product information before use."]
+    dont_say_includes: [non-toxic, harmless, natural, environmentally friendly, skin friendly, low-risk]
+
+- name: biocide advertising, free-from topic
+  answers: {segment_rules: [BI01, BI02], product_type: biocide, audience: consumers, channel: advertising,
+            topic: free_from_substances, scope: whole_product, evidence: none_yet,
+            facts: {biocide_type: disinfectant, authorised_use: surface}}
+  expect:
+    min_recs: 1
+    every_sentence_contains: ["Use biocides safely. Always read the label and product information before use."]
+    dont_say_includes: [non-toxic, harmless]
+
+- name: electronics free from lead
+  answers: {segment_rules: [EE01, EN01], product_type: electronics, audience: consumers, channel: website,
+            topic: free_from_substances, scope: whole_product, evidence: supplier_declaration,
+            facts: {substance: lead, product_category: eee, legal_act: RoHS}}
+  expect:
+    min_recs: 1
+    no_sentence_contains_words: [lead-free, rohs]
+    some_sentence_contains_all: ["As required by law for all"]
+    any_rec_cites: [EE01]
+    dont_say_includes: [lead-free]
+
+- name: vehicle advertising
+  answers: {segment_rules: [CA01, TY01], product_type: new_car, audience: consumers, channel: advertising,
+            topic: product_carbon_footprint, scope: whole_product, evidence: lca_study, method: iso14067,
+            facts: {X: "8500", functional_unit: unit, lifecycle: cradle-to-grave, model: ZX-5, car_consumption: "16.2",
+                    consumption_unit: kWh/100 km, car_co2: "0", co2_class: A}}
+  expect:
+    min_recs: 1
+    every_sentence_contains: ["energy consumption combined", "CO2 emissions combined", "CO2 class"]
+    any_rec_cites: [CA01]
+
+- name: company net-zero target on the website
+  answers: {segment: company, audience: consumers, channel: website, topic: company_climate_target, scope: company,
+            evidence: internal_measurement, facts: {X: "90", target_year: "2040", base_year: "2020", interim_year: "2030", Y: "50", ghg_scope: "Scope 1, 2 and 3"}}
+  expect:
+    min_recs: 1
+    some_template: [CT-01]
+    some_sentence_contains_all: ["Net-zero target", "interim target", "Implementation plan"]
+    any_rec_cites: [M01, RP06]
+    future_rules: [FW04]
+
+- name: detergent antimicrobial claim in 2030
+  answers: {segment_rules: [DT01, DT02], product_type: detergent, audience: consumers, channel: advertising,
+            topic: free_from_substances, scope: whole_product, evidence: test_report, use_date: "2030-03-01",
+            facts: {substance: antimicrobial, effect: bacteria, ID: DE-0012345-22, cleaning_purpose: laundry}}
+  expect:
+    min_recs: 1
+    some_template: [FF-DT-02]
+    any_rec_cites: [DT02]
+    not_future_rules: [DT02]
+
+- name: detergent antimicrobial claim in 2026
+  answers: {segment_rules: [DT01, DT02], product_type: detergent, audience: consumers, channel: advertising,
+            topic: free_from_substances, scope: whole_product, evidence: test_report, use_date: "2026-11-21",
+            facts: {substance: antimicrobial, effect: bacteria, ID: DE-0012345-22, cleaning_purpose: laundry}}
+  expect:
+    min_recs: 1
+    no_rec_cites: [DT02]
+    future_rules: [DT02]
+
+- name: figures without evidence
+  answers: {segment_rules: [TX01, TX02, EN03], audience: consumers, channel: website, topic: recycled_content,
+            scope: whole_product, evidence: none_yet}
+  expect:
+    max_recs: 1
+    no_figures: true
+    what_to_obtain: true
+
+- name: figures without evidence, footprint
+  answers: {segment: company, audience: both, channel: website, topic: emission_reduction, scope: company, evidence: none_yet}
+  expect:
+    max_recs: 1
+    no_figures: true
+    what_to_obtain: true
+
+- name: German output
+  answers: {segment_rules: [TX01, TX02, EN03], audience: consumers, channel: label, topic: recycled_content, scope: part,
+            part: outer fabric, evidence: third_party_certificate, language: de,
+            facts: {X: "60", material: polyester, scheme: Global Recycled Standard, ID: GRS-2025-0042}}
+  expect:
+    min_recs: 2
+    language: de
+    german_tag: true
+    dont_say_language: de
+    dont_say_includes: [hergestellt aus, nachhaltig]

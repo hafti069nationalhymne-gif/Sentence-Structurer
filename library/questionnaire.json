@@ -1,0 +1,3986 @@
+{
+ "version": 1,
+ "_doc": "ClaimComposer questionnaire. Questions appear one at a time; 'condition' decides whether a question shows. Options for question 1 come from knowledge/data/eclass_routing.csv plus the extra options below. Only short structured fact fields exist: percent, number with a fixed unit, year, date, ID and choice. There is no free text.",
+ "patterns": {
+  "percent": "^(100(\\.0)?|[0-9]{1,2}(\\.[0-9])?)$",
+  "number": "^[0-9]{1,7}([.,][0-9]{1,3})?$",
+  "year": "^(19[9][0-9]|20[0-9]{2}|2100)$",
+  "date": "^20[0-9]{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$",
+  "id": "^[A-Za-z0-9][A-Za-z0-9.\\/\\-]{1,39}$"
+ },
+ "questions": [
+  {
+   "id": "product",
+   "number": 1,
+   "prompt_en": "What is the product?",
+   "type": "search",
+   "help_en": "Choose the ECLASS segment. If you speak for the company, choose 'Company as a whole'.",
+   "fields": [
+    "segment",
+    "product_type"
+   ],
+   "condition": null
+  },
+  {
+   "id": "audience",
+   "number": 2,
+   "prompt_en": "Who will read it?",
+   "type": "select",
+   "help_en": "A public website or social media always counts as reaching consumers.",
+   "fields": [
+    "audience"
+   ],
+   "condition": null
+  },
+  {
+   "id": "channel",
+   "number": 3,
+   "prompt_en": "Where will it appear?",
+   "type": "select",
+   "fields": [
+    "channel"
+   ],
+   "condition": null
+  },
+  {
+   "id": "topic",
+   "number": 4,
+   "prompt_en": "What do you want to communicate?",
+   "type": "select",
+   "help_en": "Only topics that fit the product and audience are shown.",
+   "fields": [
+    "topic"
+   ],
+   "condition": null
+  },
+  {
+   "id": "scope",
+   "number": 5,
+   "prompt_en": "What does it cover?",
+   "type": "select",
+   "fields": [
+    "scope",
+    "part",
+    "excluded"
+   ],
+   "condition": null
+  },
+  {
+   "id": "evidence",
+   "number": 6,
+   "prompt_en": "What evidence do you have?",
+   "type": "compound",
+   "help_en": "Facts are optional. Empty facts stay as placeholders such as [X].",
+   "fields": [
+    "evidence",
+    "method",
+    "reference_year",
+    "facts"
+   ],
+   "condition": null
+  },
+  {
+   "id": "comparison",
+   "number": 7,
+   "prompt_en": "Do you compare with something?",
+   "type": "select",
+   "fields": [
+    "comparison"
+   ],
+   "condition": {
+    "topic_flag": "comparable"
+   }
+  },
+  {
+   "id": "timing",
+   "number": 8,
+   "prompt_en": "When will it be used, and was the product on the market before 27 September 2026?",
+   "type": "compound",
+   "fields": [
+    "use_date",
+    "on_market_before"
+   ],
+   "condition": null
+  },
+  {
+   "id": "output",
+   "number": 9,
+   "prompt_en": "Output language and tone",
+   "type": "compound",
+   "fields": [
+    "language",
+    "tone"
+   ],
+   "condition": null
+  }
+ ],
+ "extra_products": [
+  {
+   "id": "company",
+   "label_en": "Company as a whole",
+   "label_de": "Unternehmen insgesamt",
+   "subject": "company"
+  },
+  {
+   "id": "not_sure",
+   "label_en": "Not sure",
+   "label_de": "Nicht sicher",
+   "subject": "unknown"
+  }
+ ],
+ "service_segments": [
+  "13",
+  "14",
+  "15",
+  "25",
+  "41"
+ ],
+ "manual_review_segments": [
+  "90"
+ ],
+ "segment_refinements": {
+  "_doc": "Shown as a follow-up to question 1 where a segment's note says that a product rule depends on the class. The chosen option keeps only product rules whose product_domains meet these domains.",
+  "17": [
+   {
+    "id": "electrical",
+    "label_en": "Electrical or electronic machine",
+    "label_de": "Electrical or electronic machine",
+    "domains": [
+     "ECODESIGN",
+     "ELECTRONICS",
+     "CHEMICAL",
+     "ARTICLE_WITH_SVHC"
+    ]
+   },
+   {
+    "id": "non_electrical",
+    "label_en": "Non-electrical machine",
+    "label_de": "Non-electrical machine",
+    "domains": [
+     "ECODESIGN",
+     "CHEMICAL",
+     "ARTICLE_WITH_SVHC"
+    ]
+   }
+  ],
+  "36": [
+   {
+    "id": "electrical",
+    "label_en": "Electrical or electronic machine",
+    "label_de": "Electrical or electronic machine",
+    "domains": [
+     "ECODESIGN",
+     "ELECTRONICS",
+     "CHEMICAL",
+     "ARTICLE_WITH_SVHC"
+    ]
+   },
+   {
+    "id": "non_electrical",
+    "label_en": "Non-electrical machine",
+    "label_de": "Non-electrical machine",
+    "domains": [
+     "ECODESIGN",
+     "CHEMICAL",
+     "ARTICLE_WITH_SVHC"
+    ]
+   }
+  ],
+  "19": [
+   {
+    "id": "energy_label",
+    "label_en": "Device with an EU energy label (e.g. display, light source)",
+    "label_de": "Device with an EU energy label (e.g. display, light source)",
+    "domains": [
+     "ENERGY_PRODUCT",
+     "ECODESIGN",
+     "ELECTRONICS",
+     "CHEMICAL",
+     "ARTICLE_WITH_SVHC",
+     "BATTERY"
+    ]
+   },
+   {
+    "id": "battery",
+    "label_en": "Battery or battery pack",
+    "label_de": "Battery or battery pack",
+    "domains": [
+     "BATTERY",
+     "CHEMICAL",
+     "ARTICLE_WITH_SVHC"
+    ]
+   },
+   {
+    "id": "electronics",
+    "label_en": "Other electrical or electronic equipment",
+    "label_de": "Other electrical or electronic equipment",
+    "domains": [
+     "ECODESIGN",
+     "ELECTRONICS",
+     "CHEMICAL",
+     "ARTICLE_WITH_SVHC",
+     "BATTERY"
+    ]
+   }
+  ],
+  "27": [
+   {
+    "id": "energy_label",
+    "label_en": "Device with an EU energy label (e.g. light source, motor)",
+    "label_de": "Device with an EU energy label (e.g. light source, motor)",
+    "domains": [
+     "ENERGY_PRODUCT",
+     "ECODESIGN",
+     "ELECTRONICS",
+     "CHEMICAL",
+     "ARTICLE_WITH_SVHC",
+     "BATTERY"
+    ]
+   },
+   {
+    "id": "battery",
+    "label_en": "Battery or battery pack",
+    "label_de": "Battery or battery pack",
+    "domains": [
+     "BATTERY",
+     "CHEMICAL",
+     "ARTICLE_WITH_SVHC"
+    ]
+   },
+   {
+    "id": "electronics",
+    "label_en": "Other electrical or electronic equipment",
+    "label_de": "Other electrical or electronic equipment",
+    "domains": [
+     "ECODESIGN",
+     "ELECTRONICS",
+     "CHEMICAL",
+     "ARTICLE_WITH_SVHC",
+     "BATTERY"
+    ]
+   }
+  ],
+  "29": [
+   {
+    "id": "appliance_label",
+    "label_en": "Household appliance with an EU energy label",
+    "label_de": "Household appliance with an EU energy label",
+    "domains": [
+     "ENERGY_PRODUCT",
+     "ECODESIGN",
+     "ELECTRONICS",
+     "CHEMICAL",
+     "ARTICLE_WITH_SVHC"
+    ]
+   },
+   {
+    "id": "battery_device",
+    "label_en": "Battery-powered device",
+    "label_de": "Battery-powered device",
+    "domains": [
+     "BATTERY",
+     "ELECTRONICS",
+     "ECODESIGN",
+     "CHEMICAL",
+     "ARTICLE_WITH_SVHC"
+    ]
+   },
+   {
+    "id": "other_electrical",
+    "label_en": "Other electrical household device",
+    "label_de": "Other electrical household device",
+    "domains": [
+     "ELECTRONICS",
+     "ECODESIGN",
+     "CHEMICAL",
+     "ARTICLE_WITH_SVHC"
+    ]
+   },
+   {
+    "id": "non_electrical",
+    "label_en": "Non-electrical household item",
+    "label_de": "Non-electrical household item",
+    "domains": [
+     "ECODESIGN",
+     "CHEMICAL",
+     "ARTICLE_WITH_SVHC"
+    ]
+   }
+  ],
+  "21": [
+   {
+    "id": "powered",
+    "label_en": "Powered tool or equipment (battery or mains)",
+    "label_de": "Powered tool or equipment (battery or mains)",
+    "domains": [
+     "BATTERY",
+     "ELECTRONICS",
+     "CHEMICAL",
+     "ARTICLE_WITH_SVHC"
+    ]
+   },
+   {
+    "id": "unpowered",
+    "label_en": "Hand tool or non-powered equipment",
+    "label_de": "Hand tool or non-powered equipment",
+    "domains": [
+     "CHEMICAL",
+     "ARTICLE_WITH_SVHC"
+    ]
+   }
+  ],
+  "28": [
+   {
+    "id": "tyres",
+    "label_en": "Tyres",
+    "label_de": "Tyres",
+    "domains": [
+     "TYRE",
+     "CHEMICAL",
+     "ARTICLE_WITH_SVHC"
+    ]
+   },
+   {
+    "id": "battery",
+    "label_en": "Vehicle battery",
+    "label_de": "Vehicle battery",
+    "domains": [
+     "BATTERY",
+     "CHEMICAL",
+     "ARTICLE_WITH_SVHC"
+    ]
+   },
+   {
+    "id": "other_part",
+    "label_en": "Other automotive part",
+    "label_de": "Other automotive part",
+    "domains": [
+     "CHEMICAL",
+     "ARTICLE_WITH_SVHC"
+    ]
+   }
+  ],
+  "44": [
+   {
+    "id": "new_car",
+    "label_en": "New passenger car",
+    "label_de": "New passenger car",
+    "domains": [
+     "VEHICLE",
+     "BATTERY"
+    ]
+   },
+   {
+    "id": "tyres",
+    "label_en": "Tyres",
+    "label_de": "Tyres",
+    "domains": [
+     "TYRE"
+    ]
+   },
+   {
+    "id": "other_vehicle",
+    "label_en": "Other motor vehicle or part",
+    "label_de": "Other motor vehicle or part",
+    "domains": [
+     "TYRE",
+     "BATTERY"
+    ]
+   }
+  ],
+  "30": [
+   {
+    "id": "detergent",
+    "label_en": "Detergent or cleaning agent",
+    "label_de": "Detergent or cleaning agent",
+    "domains": [
+     "DETERGENT",
+     "CHEMICAL"
+    ]
+   },
+   {
+    "id": "biocide",
+    "label_en": "Biocidal product (e.g. disinfectant, insecticide)",
+    "label_de": "Biocidal product (e.g. disinfectant, insecticide)",
+    "domains": [
+     "BIOCIDE",
+     "CHEMICAL"
+    ]
+   },
+   {
+    "id": "other_chemical",
+    "label_en": "Other auxiliary or additive",
+    "label_de": "Other auxiliary or additive",
+    "domains": [
+     "CHEMICAL"
+    ]
+   }
+  ],
+  "38": [
+   {
+    "id": "biocide",
+    "label_en": "Biocidal product",
+    "label_de": "Biocidal product",
+    "domains": [
+     "BIOCIDE",
+     "CHEMICAL",
+     "ARTICLE_WITH_SVHC"
+    ]
+   },
+   {
+    "id": "other_chemical",
+    "label_en": "Other inorganic chemical",
+    "label_de": "Other inorganic chemical",
+    "domains": [
+     "CHEMICAL",
+     "ARTICLE_WITH_SVHC"
+    ]
+   }
+  ],
+  "39": [
+   {
+    "id": "biocide",
+    "label_en": "Biocidal product",
+    "label_de": "Biocidal product",
+    "domains": [
+     "BIOCIDE",
+     "CHEMICAL",
+     "ARTICLE_WITH_SVHC"
+    ]
+   },
+   {
+    "id": "other_chemical",
+    "label_en": "Other organic chemical",
+    "label_de": "Other organic chemical",
+    "domains": [
+     "CHEMICAL",
+     "ARTICLE_WITH_SVHC"
+    ]
+   }
+  ],
+  "45": [
+   {
+    "id": "pesticide",
+    "label_en": "Plant protection product",
+    "label_de": "Plant protection product",
+    "domains": [
+     "PESTICIDE",
+     "CHEMICAL"
+    ]
+   },
+   {
+    "id": "biocide",
+    "label_en": "Biocidal product",
+    "label_de": "Biocidal product",
+    "domains": [
+     "BIOCIDE",
+     "CHEMICAL"
+    ]
+   },
+   {
+    "id": "other",
+    "label_en": "Medicinal product or active ingredient",
+    "label_de": "Medicinal product or active ingredient",
+    "domains": [
+     "CHEMICAL"
+    ]
+   }
+  ],
+  "31": [
+   {
+    "id": "packaging",
+    "label_en": "Sold as packaging",
+    "label_de": "Sold as packaging",
+    "domains": [
+     "PACKAGING",
+     "CHEMICAL",
+     "ARTICLE_WITH_SVHC"
+    ]
+   },
+   {
+    "id": "not_packaging",
+    "label_en": "Not sold as packaging",
+    "label_de": "Not sold as packaging",
+    "domains": [
+     "CHEMICAL",
+     "ARTICLE_WITH_SVHC"
+    ]
+   }
+  ]
+ },
+ "audience": [
+  {
+   "id": "consumers",
+   "label_en": "Consumers",
+   "label_de": "Verbraucher",
+   "audiences": [
+    "B2C"
+   ]
+  },
+  {
+   "id": "business",
+   "label_en": "Businesses only",
+   "label_de": "Nur Unternehmen",
+   "audiences": [
+    "B2B"
+   ]
+  },
+  {
+   "id": "both",
+   "label_en": "Both",
+   "label_de": "Beide",
+   "audiences": [
+    "B2C",
+    "B2B"
+   ]
+  }
+ ],
+ "public_channels": [
+  "website",
+  "social_media"
+ ],
+ "channel": [
+  {
+   "id": "label",
+   "label_en": "Product label",
+   "label_de": "Produktetikett"
+  },
+  {
+   "id": "packaging",
+   "label_en": "Packaging",
+   "label_de": "Verpackung"
+  },
+  {
+   "id": "advertising",
+   "label_en": "Advertising",
+   "label_de": "Werbung"
+  },
+  {
+   "id": "website",
+   "label_en": "Website or online shop",
+   "label_de": "Website oder Onlineshop"
+  },
+  {
+   "id": "social_media",
+   "label_en": "Social media",
+   "label_de": "Soziale Medien"
+  },
+  {
+   "id": "technical_material",
+   "label_en": "Technical material",
+   "label_de": "Technische Unterlagen"
+  },
+  {
+   "id": "sustainability_report",
+   "label_en": "Sustainability report",
+   "label_de": "Nachhaltigkeitsbericht"
+  }
+ ],
+ "scope": [
+  {
+   "id": "whole_product",
+   "label_en": "Whole product",
+   "label_de": "Ganzes Produkt"
+  },
+  {
+   "id": "part",
+   "label_en": "One part (choose part)",
+   "label_de": "Ein Teil (Teil wählen)"
+  },
+  {
+   "id": "packaging",
+   "label_en": "Packaging only",
+   "label_de": "Nur Verpackung"
+  },
+  {
+   "id": "site",
+   "label_en": "One site",
+   "label_de": "Ein Standort"
+  },
+  {
+   "id": "company",
+   "label_en": "Whole company",
+   "label_de": "Ganzes Unternehmen"
+  }
+ ],
+ "subject_scopes": {
+  "product": [
+   "whole_product",
+   "part",
+   "packaging",
+   "site",
+   "company"
+  ],
+  "service": [
+   "whole_product",
+   "site",
+   "company"
+  ],
+  "company": [
+   "site",
+   "company"
+  ],
+  "unknown": [
+   "whole_product",
+   "part",
+   "packaging",
+   "site",
+   "company"
+  ]
+ },
+ "evidence": [
+  {
+   "id": "third_party_certificate",
+   "label_en": "Third-party certificate",
+   "label_de": "Zertifikat einer unabhängigen Stelle"
+  },
+  {
+   "id": "eu_ecolabel_licence",
+   "label_en": "EU Ecolabel licence",
+   "label_de": "EU-Ecolabel-Lizenz"
+  },
+  {
+   "id": "emas_registration",
+   "label_en": "EMAS registration",
+   "label_de": "EMAS-Registrierung"
+  },
+  {
+   "id": "lca_study",
+   "label_en": "Life-cycle or footprint study",
+   "label_de": "Ökobilanz- oder Fußabdruckstudie"
+  },
+  {
+   "id": "test_report",
+   "label_en": "Test report",
+   "label_de": "Prüfbericht"
+  },
+  {
+   "id": "supplier_declaration",
+   "label_en": "Supplier declaration",
+   "label_de": "Lieferantenerklärung"
+  },
+  {
+   "id": "internal_measurement",
+   "label_en": "Internal measurement",
+   "label_de": "Interne Messung"
+  },
+  {
+   "id": "none_yet",
+   "label_en": "None yet",
+   "label_de": "Noch keine"
+  }
+ ],
+ "comparison": [
+  {
+   "id": "none",
+   "label_en": "No",
+   "label_de": "Nein"
+  },
+  {
+   "id": "previous_model",
+   "label_en": "Previous model",
+   "label_de": "Vorgängermodell"
+  },
+  {
+   "id": "competitor",
+   "label_en": "Competitor product",
+   "label_de": "Wettbewerbsprodukt"
+  },
+  {
+   "id": "industry_average",
+   "label_en": "Industry average",
+   "label_de": "Branchendurchschnitt"
+  }
+ ],
+ "comparator_fill": {
+  "_doc": "Value used for the [comparator] placeholder. A competitor product must be named by the company, so it stays a placeholder.",
+  "previous_model": {
+   "en": "the previous model",
+   "de": "das Vorgängermodell"
+  },
+  "industry_average": {
+   "en": "the industry average",
+   "de": "der Branchendurchschnitt"
+  },
+  "competitor": null
+ },
+ "on_market_before": [
+  {
+   "id": "yes",
+   "label_en": "Yes",
+   "label_de": "Ja"
+  },
+  {
+   "id": "no",
+   "label_en": "No",
+   "label_de": "Nein"
+  },
+  {
+   "id": "unknown",
+   "label_en": "Unknown",
+   "label_de": "Unbekannt"
+  }
+ ],
+ "language": [
+  {
+   "id": "en",
+   "label_en": "English",
+   "label_de": "Englisch"
+  },
+  {
+   "id": "de",
+   "label_en": "German",
+   "label_de": "Deutsch"
+  }
+ ],
+ "tone": [
+  {
+   "id": "factual",
+   "label_en": "Factual",
+   "label_de": "Sachlich"
+  },
+  {
+   "id": "warm",
+   "label_en": "Warm",
+   "label_de": "Warm"
+  },
+  {
+   "id": "short",
+   "label_en": "Short",
+   "label_de": "Kurz"
+  }
+ ],
+ "parts": {
+  "_doc": "Components for 'One part' and for the excluded part, by product domain. 'default' is used when no domain list fits.",
+  "PACKAGING": [
+   {
+    "id": "bottle body",
+    "label_en": "Bottle body",
+    "label_de": "Flaschenkörper"
+   },
+   {
+    "id": "cap",
+    "label_en": "Cap",
+    "label_de": "Verschluss"
+   },
+   {
+    "id": "sleeve",
+    "label_en": "Sleeve",
+    "label_de": "Sleeve (Umhüllung)"
+   },
+   {
+    "id": "carton",
+    "label_en": "Carton",
+    "label_de": "Faltschachtel"
+   },
+   {
+    "id": "inner film",
+    "label_en": "Inner film",
+    "label_de": "Innenfolie"
+   },
+   {
+    "id": "tray",
+    "label_en": "Tray",
+    "label_de": "Schale"
+   },
+   {
+    "id": "pouch",
+    "label_en": "Pouch",
+    "label_de": "Beutel"
+   },
+   {
+    "id": "can",
+    "label_en": "Can",
+    "label_de": "Dose"
+   },
+   {
+    "id": "jar",
+    "label_en": "Jar",
+    "label_de": "Glas"
+   },
+   {
+    "id": "lid",
+    "label_en": "Lid",
+    "label_de": "Deckel"
+   },
+   {
+    "id": "outer box",
+    "label_en": "Outer box",
+    "label_de": "Umkarton"
+   }
+  ],
+  "TEXTILE": [
+   {
+    "id": "outer fabric",
+    "label_en": "Outer fabric",
+    "label_de": "Oberstoff"
+   },
+   {
+    "id": "lining",
+    "label_en": "Lining",
+    "label_de": "Futter"
+   },
+   {
+    "id": "filling",
+    "label_en": "Filling",
+    "label_de": "Füllung"
+   },
+   {
+    "id": "trims",
+    "label_en": "Trims",
+    "label_de": "Besätze"
+   },
+   {
+    "id": "sole",
+    "label_en": "Sole",
+    "label_de": "Sohle"
+   },
+   {
+    "id": "upper",
+    "label_en": "Upper",
+    "label_de": "Obermaterial"
+   }
+  ],
+  "ELECTRONICS": [
+   {
+    "id": "housing",
+    "label_en": "Housing",
+    "label_de": "Gehäuse"
+   },
+   {
+    "id": "power supply",
+    "label_en": "Power supply",
+    "label_de": "Netzteil"
+   },
+   {
+    "id": "display",
+    "label_en": "Display",
+    "label_de": "Display"
+   },
+   {
+    "id": "cable",
+    "label_en": "Cable",
+    "label_de": "Kabel"
+   },
+   {
+    "id": "battery",
+    "label_en": "Battery",
+    "label_de": "Akku"
+   },
+   {
+    "id": "circuit board",
+    "label_en": "Circuit board",
+    "label_de": "Leiterplatte"
+   }
+  ],
+  "BATTERY": [
+   {
+    "id": "battery cell",
+    "label_en": "Battery cell",
+    "label_de": "Batteriezelle"
+   },
+   {
+    "id": "battery pack",
+    "label_en": "Battery pack",
+    "label_de": "Batteriepack"
+   },
+   {
+    "id": "cathode",
+    "label_en": "Cathode",
+    "label_de": "Kathode"
+   },
+   {
+    "id": "housing",
+    "label_en": "Housing",
+    "label_de": "Gehäuse"
+   }
+  ],
+  "CONSTRUCTION": [
+   {
+    "id": "insulation layer",
+    "label_en": "Insulation layer",
+    "label_de": "Dämmschicht"
+   },
+   {
+    "id": "binder",
+    "label_en": "Binder",
+    "label_de": "Bindemittel"
+   },
+   {
+    "id": "aggregate",
+    "label_en": "Aggregate",
+    "label_de": "Gesteinskörnung"
+   },
+   {
+    "id": "facing",
+    "label_en": "Facing",
+    "label_de": "Deckschicht"
+   }
+  ],
+  "VEHICLE": [
+   {
+    "id": "interior trim",
+    "label_en": "Interior trim",
+    "label_de": "Innenverkleidung"
+   },
+   {
+    "id": "seat covers",
+    "label_en": "Seat covers",
+    "label_de": "Sitzbezüge"
+   },
+   {
+    "id": "traction battery",
+    "label_en": "Traction battery",
+    "label_de": "Antriebsbatterie"
+   },
+   {
+    "id": "bodywork",
+    "label_en": "Bodywork",
+    "label_de": "Karosserie"
+   }
+  ],
+  "default": [
+   {
+    "id": "main body",
+    "label_en": "Main body",
+    "label_de": "Grundkörper"
+   },
+   {
+    "id": "frame",
+    "label_en": "Frame",
+    "label_de": "Rahmen"
+   },
+   {
+    "id": "housing",
+    "label_en": "Housing",
+    "label_de": "Gehäuse"
+   },
+   {
+    "id": "cover",
+    "label_en": "Cover",
+    "label_de": "Abdeckung"
+   },
+   {
+    "id": "handle",
+    "label_en": "Handle",
+    "label_de": "Griff"
+   },
+   {
+    "id": "refill",
+    "label_en": "Refill",
+    "label_de": "Nachfüllung"
+   }
+  ]
+ },
+ "parts_priority": [
+  "PACKAGING",
+  "TEXTILE",
+  "BATTERY",
+  "CONSTRUCTION",
+  "VEHICLE",
+  "ELECTRONICS"
+ ],
+ "option_lists": {
+  "material": [
+   {
+    "id": "polyester",
+    "label_en": "polyester",
+    "label_de": "Polyester"
+   },
+   {
+    "id": "polyamide",
+    "label_en": "polyamide",
+    "label_de": "Polyamid"
+   },
+   {
+    "id": "cotton",
+    "label_en": "cotton",
+    "label_de": "Baumwolle"
+   },
+   {
+    "id": "wool",
+    "label_en": "wool",
+    "label_de": "Wolle"
+   },
+   {
+    "id": "PET",
+    "label_en": "PET",
+    "label_de": "PET"
+   },
+   {
+    "id": "HDPE",
+    "label_en": "HDPE",
+    "label_de": "HDPE"
+   },
+   {
+    "id": "polypropylene",
+    "label_en": "polypropylene",
+    "label_de": "Polypropylen"
+   },
+   {
+    "id": "plastic",
+    "label_en": "plastic",
+    "label_de": "Kunststoff"
+   },
+   {
+    "id": "paper",
+    "label_en": "paper",
+    "label_de": "Papier"
+   },
+   {
+    "id": "cardboard",
+    "label_en": "cardboard",
+    "label_de": "Karton"
+   },
+   {
+    "id": "glass",
+    "label_en": "glass",
+    "label_de": "Glas"
+   },
+   {
+    "id": "aluminium",
+    "label_en": "aluminium",
+    "label_de": "Aluminium"
+   },
+   {
+    "id": "steel",
+    "label_en": "steel",
+    "label_de": "Stahl"
+   },
+   {
+    "id": "copper",
+    "label_en": "copper",
+    "label_de": "Kupfer"
+   },
+   {
+    "id": "rubber",
+    "label_en": "rubber",
+    "label_de": "Gummi"
+   },
+   {
+    "id": "wood",
+    "label_en": "wood",
+    "label_de": "Holz"
+   }
+  ],
+  "battery_material": [
+   {
+    "id": "cobalt",
+    "label_en": "cobalt",
+    "label_de": "Kobalt"
+   },
+   {
+    "id": "lithium",
+    "label_en": "lithium",
+    "label_de": "Lithium"
+   },
+   {
+    "id": "nickel",
+    "label_en": "nickel",
+    "label_de": "Nickel"
+   },
+   {
+    "id": "lead",
+    "label_en": "lead",
+    "label_de": "Blei"
+   }
+  ],
+  "recycled_origin": [
+   {
+    "id": "post-consumer",
+    "label_en": "post-consumer",
+    "label_de": "Post-Consumer-"
+   },
+   {
+    "id": "pre-consumer",
+    "label_en": "pre-consumer",
+    "label_de": "Pre-Consumer-"
+   }
+  ],
+  "scheme": [
+   {
+    "id": "Global Recycled Standard",
+    "label_en": "Global Recycled Standard",
+    "label_de": "Global Recycled Standard"
+   },
+   {
+    "id": "Recycled Claim Standard",
+    "label_en": "Recycled Claim Standard",
+    "label_de": "Recycled Claim Standard"
+   },
+   {
+    "id": "RecyClass",
+    "label_en": "RecyClass",
+    "label_de": "RecyClass"
+   },
+   {
+    "id": "ISCC PLUS",
+    "label_en": "ISCC PLUS",
+    "label_de": "ISCC PLUS"
+   },
+   {
+    "id": "GOTS",
+    "label_en": "GOTS",
+    "label_de": "GOTS"
+   },
+   {
+    "id": "Organic Content Standard",
+    "label_en": "Organic Content Standard",
+    "label_de": "Organic Content Standard"
+   },
+   {
+    "id": "FSC",
+    "label_en": "FSC",
+    "label_de": "FSC"
+   },
+   {
+    "id": "PEFC",
+    "label_en": "PEFC",
+    "label_de": "PEFC"
+   },
+   {
+    "id": "Blue Angel",
+    "label_en": "Blue Angel",
+    "label_de": "Blauer Engel"
+   },
+   {
+    "id": "Nordic Swan Ecolabel",
+    "label_en": "Nordic Swan Ecolabel",
+    "label_de": "Nordic Swan Ecolabel"
+   }
+  ],
+  "markets": [
+   {
+    "id": "Germany",
+    "label_en": "Germany",
+    "label_de": "Deutschland"
+   },
+   {
+    "id": "Austria",
+    "label_en": "Austria",
+    "label_de": "Österreich"
+   },
+   {
+    "id": "Germany and Austria",
+    "label_en": "Germany and Austria",
+    "label_de": "Deutschland und Österreich"
+   },
+   {
+    "id": "the EU",
+    "label_en": "the EU",
+    "label_de": "der EU"
+   }
+  ],
+  "collection_stream": [
+   {
+    "id": "yellow_bin",
+    "label_en": "the yellow bin or yellow bag",
+    "label_de": "die Gelbe Tonne oder den Gelben Sack"
+   },
+   {
+    "id": "paper",
+    "label_en": "paper collection",
+    "label_de": "die Papiersammlung"
+   },
+   {
+    "id": "glass",
+    "label_en": "glass collection",
+    "label_de": "die Glassammlung"
+   },
+   {
+    "id": "residual",
+    "label_en": "residual waste",
+    "label_de": "den Restmüll"
+   },
+   {
+    "id": "organic_waste",
+    "label_en": "organic waste collection",
+    "label_de": "die Biotonne"
+   }
+  ],
+  "route": [
+   {
+    "id": "industrial_composting",
+    "label_en": "industrial composting via the organic waste collection where accepted",
+    "label_de": "die industrielle Kompostierung über die Biotonne, sofern dort angenommen"
+   },
+   {
+    "id": "residual",
+    "label_en": "residual waste",
+    "label_de": "den Restmüll"
+   }
+  ],
+  "grade": [
+   {
+    "id": "A",
+    "label_en": "A",
+    "label_de": "A"
+   },
+   {
+    "id": "B",
+    "label_en": "B",
+    "label_de": "B"
+   },
+   {
+    "id": "C",
+    "label_en": "C",
+    "label_de": "C"
+   }
+  ],
+  "ghg_scope": [
+   {
+    "id": "Scope 1",
+    "label_en": "Scope 1",
+    "label_de": "Scope-1"
+   },
+   {
+    "id": "Scope 1 and 2",
+    "label_en": "Scope 1 and 2",
+    "label_de": "Scope-1- und -2"
+   },
+   {
+    "id": "Scope 1, 2 and 3",
+    "label_en": "Scope 1, 2 and 3",
+    "label_de": "Scope-1-, -2- und -3"
+   }
+  ],
+  "functional_unit": [
+   {
+    "id": "unit",
+    "label_en": "unit sold",
+    "label_de": "verkaufte Einheit"
+   },
+   {
+    "id": "kg",
+    "label_en": "kg of product",
+    "label_de": "kg Produkt"
+   },
+   {
+    "id": "m2",
+    "label_en": "m² of product",
+    "label_de": "m² Produkt"
+   },
+   {
+    "id": "year_of_use",
+    "label_en": "year of use",
+    "label_de": "Nutzungsjahr"
+   }
+  ],
+  "lifecycle": [
+   {
+    "id": "cradle-to-gate",
+    "label_en": "raw materials and production (cradle to gate)",
+    "label_de": "Rohstoffe und Herstellung (cradle to gate)"
+   },
+   {
+    "id": "cradle-to-grave",
+    "label_en": "the whole life cycle (cradle to grave)",
+    "label_de": "dem gesamten Lebenszyklus (cradle to grave)"
+   },
+   {
+    "id": "production",
+    "label_en": "production",
+    "label_de": "der Herstellung"
+   },
+   {
+    "id": "transport",
+    "label_en": "transport",
+    "label_de": "dem Transport"
+   }
+  ],
+  "project_type": [
+   {
+    "id": "forest protection",
+    "label_en": "forest protection",
+    "label_de": "Waldschutz"
+   },
+   {
+    "id": "reforestation",
+    "label_en": "reforestation",
+    "label_de": "Wiederaufforstung"
+   },
+   {
+    "id": "renewable energy",
+    "label_en": "renewable energy",
+    "label_de": "erneuerbare Energien"
+   },
+   {
+    "id": "clean cooking",
+    "label_en": "clean cooking",
+    "label_de": "sauberes Kochen"
+   },
+   {
+    "id": "peatland restoration",
+    "label_en": "peatland restoration",
+    "label_de": "Moorwiedervernässung"
+   }
+  ],
+  "unit_type": [
+   {
+    "id": "permanent",
+    "label_en": "permanent carbon removal units",
+    "label_de": "Einheiten dauerhafter CO2-Entnahme"
+   },
+   {
+    "id": "carbon_farming",
+    "label_en": "carbon farming sequestration units",
+    "label_de": "Einheiten für Kohlenstoffbindung in der Landwirtschaft"
+   },
+   {
+    "id": "product_storage",
+    "label_en": "carbon storage in products units",
+    "label_de": "Einheiten für Kohlenstoffspeicherung in Produkten"
+   }
+  ],
+  "activity": [
+   {
+    "id": "soils",
+    "label_en": "agricultural soils",
+    "label_de": "landwirtschaftlichen Böden"
+   },
+   {
+    "id": "forests",
+    "label_en": "forests",
+    "label_de": "Wäldern"
+   },
+   {
+    "id": "wood products",
+    "label_en": "wood products",
+    "label_de": "Holzprodukten"
+   },
+   {
+    "id": "geological storage",
+    "label_en": "geological storage",
+    "label_de": "geologischer Speicherung"
+   }
+  ],
+  "framework": [
+   {
+    "id": "SBTi",
+    "label_en": "the criteria of the Science Based Targets initiative",
+    "label_de": "den Kriterien der Science Based Targets initiative"
+   },
+   {
+    "id": "ESRS E1",
+    "label_en": "the ESRS E1 transition plan requirements",
+    "label_de": "den Anforderungen an Übergangspläne nach ESRS E1"
+   }
+  ],
+  "energy_class": [
+   {
+    "id": "A",
+    "label_en": "A",
+    "label_de": "A"
+   },
+   {
+    "id": "B",
+    "label_en": "B",
+    "label_de": "B"
+   },
+   {
+    "id": "C",
+    "label_en": "C",
+    "label_de": "C"
+   },
+   {
+    "id": "D",
+    "label_en": "D",
+    "label_de": "D"
+   },
+   {
+    "id": "E",
+    "label_en": "E",
+    "label_de": "E"
+   },
+   {
+    "id": "F",
+    "label_en": "F",
+    "label_de": "F"
+   },
+   {
+    "id": "G",
+    "label_en": "G",
+    "label_de": "G"
+   }
+  ],
+  "tyre_class": [
+   {
+    "id": "A",
+    "label_en": "A",
+    "label_de": "A"
+   },
+   {
+    "id": "B",
+    "label_en": "B",
+    "label_de": "B"
+   },
+   {
+    "id": "C",
+    "label_en": "C",
+    "label_de": "C"
+   },
+   {
+    "id": "D",
+    "label_en": "D",
+    "label_de": "D"
+   },
+   {
+    "id": "E",
+    "label_en": "E",
+    "label_de": "E"
+   }
+  ],
+  "co2_class": [
+   {
+    "id": "A",
+    "label_en": "A",
+    "label_de": "A"
+   },
+   {
+    "id": "B",
+    "label_en": "B",
+    "label_de": "B"
+   },
+   {
+    "id": "C",
+    "label_en": "C",
+    "label_de": "C"
+   },
+   {
+    "id": "D",
+    "label_en": "D",
+    "label_de": "D"
+   },
+   {
+    "id": "E",
+    "label_en": "E",
+    "label_de": "E"
+   },
+   {
+    "id": "F",
+    "label_en": "F",
+    "label_de": "F"
+   },
+   {
+    "id": "G",
+    "label_en": "G",
+    "label_de": "G"
+   }
+  ],
+  "consumption_unit": [
+   {
+    "id": "l/100 km",
+    "label_en": "l/100 km",
+    "label_de": "l/100 km"
+   },
+   {
+    "id": "kWh/100 km",
+    "label_en": "kWh/100 km",
+    "label_de": "kWh/100 km"
+   },
+   {
+    "id": "kg/100 km",
+    "label_en": "kg/100 km",
+    "label_de": "kg/100 km"
+   }
+  ],
+  "unit_period": [
+   {
+    "id": "year",
+    "label_en": "year",
+    "label_de": "Jahr"
+   },
+   {
+    "id": "1000 hours",
+    "label_en": "1,000 hours",
+    "label_de": "1.000 Stunden"
+   },
+   {
+    "id": "100 cycles",
+    "label_en": "100 cycles",
+    "label_de": "100 Zyklen"
+   }
+  ],
+  "dur_unit": [
+   {
+    "id": "cycles",
+    "label_en": "cycles",
+    "label_de": "Zyklen"
+   },
+   {
+    "id": "hours of use",
+    "label_en": "hours of use",
+    "label_de": "Betriebsstunden"
+   },
+   {
+    "id": "opening and closing operations",
+    "label_en": "opening and closing operations",
+    "label_de": "Öffnungs- und Schließvorgänge"
+   }
+  ],
+  "repair_party": [
+   {
+    "id": "user",
+    "label_en": "the user",
+    "label_de": "die Nutzerin oder den Nutzer"
+   },
+   {
+    "id": "service_partner",
+    "label_en": "our service partners",
+    "label_de": "unsere Servicepartner"
+   },
+   {
+    "id": "independent",
+    "label_en": "independent repairers",
+    "label_de": "unabhängige Reparaturbetriebe"
+   }
+  ],
+  "substance": [
+   {
+    "id": "PFAS",
+    "label_en": "PFAS",
+    "label_de": "PFAS"
+   },
+   {
+    "id": "bisphenol A",
+    "label_en": "bisphenol A",
+    "label_de": "Bisphenol A"
+   },
+   {
+    "id": "phthalates",
+    "label_en": "phthalates",
+    "label_de": "Phthalate"
+   },
+   {
+    "id": "formaldehyde",
+    "label_en": "formaldehyde",
+    "label_de": "Formaldehyd"
+   },
+   {
+    "id": "palm oil",
+    "label_en": "palm oil",
+    "label_de": "Palmöl"
+   },
+   {
+    "id": "silicones",
+    "label_en": "silicones",
+    "label_de": "Silikone"
+   },
+   {
+    "id": "lead",
+    "label_en": "lead",
+    "label_de": "Blei"
+   },
+   {
+    "id": "mercury",
+    "label_en": "mercury",
+    "label_de": "Quecksilber"
+   },
+   {
+    "id": "antimicrobial",
+    "label_en": "antimicrobial or disinfecting effect",
+    "label_de": "antimikrobielle oder desinfizierende Wirkung"
+   },
+   {
+    "id": "microorganisms",
+    "label_en": "added micro-organisms",
+    "label_de": "zugesetzte Mikroorganismen"
+   }
+  ],
+  "legal_act": [
+   {
+    "id": "REACH",
+    "label_en": "Regulation (EC) No 1907/2006 (REACH)",
+    "label_de": "der Verordnung (EG) Nr. 1907/2006 (REACH)"
+   },
+   {
+    "id": "POPs",
+    "label_en": "Regulation (EU) 2019/1021 (POPs)",
+    "label_de": "der Verordnung (EU) 2019/1021 (POP)"
+   },
+   {
+    "id": "RoHS",
+    "label_en": "Directive 2011/65/EU",
+    "label_de": "der Richtlinie 2011/65/EU"
+   },
+   {
+    "id": "Cosmetics",
+    "label_en": "Regulation (EC) No 1223/2009",
+    "label_de": "der Verordnung (EG) Nr. 1223/2009"
+   }
+  ],
+  "product_category": [
+   {
+    "id": "eee",
+    "label_en": "electrical and electronic equipment",
+    "label_de": "Elektro- und Elektronikgeräte"
+   },
+   {
+    "id": "detergents",
+    "label_en": "detergents",
+    "label_de": "Wasch- und Reinigungsmittel"
+   },
+   {
+    "id": "cosmetics",
+    "label_en": "cosmetic products",
+    "label_de": "kosmetischen Mittel"
+   },
+   {
+    "id": "textiles",
+    "label_en": "textile products",
+    "label_de": "Textilerzeugnisse"
+   },
+   {
+    "id": "articles",
+    "label_en": "articles in this category",
+    "label_de": "Erzeugnisse dieser Kategorie"
+   }
+  ],
+  "commodity": [
+   {
+    "id": "coffee",
+    "label_en": "coffee",
+    "label_de": "Kaffee"
+   },
+   {
+    "id": "cocoa",
+    "label_en": "cocoa",
+    "label_de": "Kakao"
+   },
+   {
+    "id": "palm oil",
+    "label_en": "palm oil",
+    "label_de": "Palmöl"
+   },
+   {
+    "id": "soya",
+    "label_en": "soya",
+    "label_de": "Soja"
+   },
+   {
+    "id": "wood",
+    "label_en": "wood",
+    "label_de": "Holz"
+   },
+   {
+    "id": "rubber",
+    "label_en": "rubber",
+    "label_de": "Kautschuk"
+   },
+   {
+    "id": "cattle",
+    "label_en": "cattle",
+    "label_de": "Rind"
+   }
+  ],
+  "fibre": [
+   {
+    "id": "cotton",
+    "label_en": "cotton",
+    "label_de": "Baumwolle"
+   },
+   {
+    "id": "polyester",
+    "label_en": "polyester",
+    "label_de": "Polyester"
+   },
+   {
+    "id": "elastane",
+    "label_en": "elastane",
+    "label_de": "Elasthan"
+   },
+   {
+    "id": "wool",
+    "label_en": "wool",
+    "label_de": "Wolle"
+   },
+   {
+    "id": "polyamide",
+    "label_en": "polyamide",
+    "label_de": "Polyamid"
+   },
+   {
+    "id": "viscose",
+    "label_en": "viscose",
+    "label_de": "Viskose"
+   },
+   {
+    "id": "linen",
+    "label_en": "linen",
+    "label_de": "Leinen"
+   }
+  ],
+  "fibre_count": [
+   {
+    "id": "single",
+    "label_en": "Made exclusively of one fibre",
+    "label_de": "Nur aus einer Faser"
+   },
+   {
+    "id": "several",
+    "label_en": "Several fibres",
+    "label_de": "Mehrere Fasern"
+   }
+  ],
+  "organic_share": [
+   {
+    "id": "95plus",
+    "label_en": "At least 95 % of agricultural ingredients are organic",
+    "label_de": "Mindestens 95 % der Zutaten landwirtschaftlichen Ursprungs sind bio"
+   },
+   {
+    "id": "below95",
+    "label_en": "Less than 95 %",
+    "label_de": "Weniger als 95 %"
+   }
+  ],
+  "ingredient": [
+   {
+    "id": "oats",
+    "label_en": "oats",
+    "label_de": "Hafer"
+   },
+   {
+    "id": "wheat flour",
+    "label_en": "wheat flour",
+    "label_de": "Weizenmehl"
+   },
+   {
+    "id": "sugar",
+    "label_en": "sugar",
+    "label_de": "Zucker"
+   },
+   {
+    "id": "milk",
+    "label_en": "milk",
+    "label_de": "Milch"
+   },
+   {
+    "id": "cocoa",
+    "label_en": "cocoa",
+    "label_de": "Kakao"
+   },
+   {
+    "id": "coffee",
+    "label_en": "coffee",
+    "label_de": "Kaffee"
+   },
+   {
+    "id": "tomatoes",
+    "label_en": "tomatoes",
+    "label_de": "Tomaten"
+   }
+  ],
+  "farming_place": [
+   {
+    "id": "EU",
+    "label_en": "EU Agriculture",
+    "label_de": "EU-Landwirtschaft"
+   },
+   {
+    "id": "non-EU",
+    "label_en": "non-EU Agriculture",
+    "label_de": "Nicht-EU-Landwirtschaft"
+   },
+   {
+    "id": "EU/non-EU",
+    "label_en": "EU/non-EU Agriculture",
+    "label_de": "EU-/Nicht-EU-Landwirtschaft"
+   }
+  ],
+  "kpi": [
+   {
+    "id": "turnover",
+    "label_en": "turnover",
+    "label_de": "Umsatzerlöse"
+   },
+   {
+    "id": "CapEx",
+    "label_en": "CapEx",
+    "label_de": "Investitionsausgaben (CapEx)"
+   },
+   {
+    "id": "OpEx",
+    "label_en": "OpEx",
+    "label_de": "Betriebsausgaben (OpEx)"
+   }
+  ],
+  "report_name": [
+   {
+    "id": "annual",
+    "label_en": "annual report",
+    "label_de": "Geschäftsbericht"
+   },
+   {
+    "id": "sustainability_statement",
+    "label_en": "sustainability statement",
+    "label_de": "Nachhaltigkeitserklärung"
+   }
+  ],
+  "assurance_level": [
+   {
+    "id": "limited",
+    "label_en": "limited",
+    "label_de": "eine begrenzte"
+   },
+   {
+    "id": "reasonable",
+    "label_en": "reasonable",
+    "label_de": "eine hinreichende"
+   }
+  ],
+  "reporting_standard": [
+   {
+    "id": "ESRS",
+    "label_en": "the ESRS (Delegated Regulation (EU) 2023/2772)",
+    "label_de": "den ESRS (Delegierte Verordnung (EU) 2023/2772)"
+   },
+   {
+    "id": "VSME",
+    "label_en": "the voluntary VSME standard",
+    "label_de": "dem freiwilligen VSME-Standard"
+   }
+  ],
+  "legal_basis": [
+   {
+    "id": "hgb",
+    "label_en": "§ 289b HGB",
+    "label_de": "§ 289b HGB"
+   },
+   {
+    "id": "voluntary",
+    "label_en": "a voluntary publication",
+    "label_de": "freiwilliger Veröffentlichung"
+   }
+  ],
+  "metric": [
+   {
+    "id": "carbon_footprint",
+    "label_en": "Carbon footprint",
+    "label_de": "CO2-Fußabdruck"
+   },
+   {
+    "id": "water_use",
+    "label_en": "Water use",
+    "label_de": "Wasserverbrauch"
+   },
+   {
+    "id": "energy_use",
+    "label_en": "Energy use",
+    "label_de": "Energieverbrauch"
+   }
+  ],
+  "metric_unit": [
+   {
+    "id": "kg CO2e",
+    "label_en": "kg CO2e",
+    "label_de": "kg CO2e"
+   },
+   {
+    "id": "l",
+    "label_en": "l",
+    "label_de": "l"
+   },
+   {
+    "id": "kWh",
+    "label_en": "kWh",
+    "label_de": "kWh"
+   }
+  ],
+  "biocide_type": [
+   {
+    "id": "disinfectant",
+    "label_en": "Disinfectant",
+    "label_de": "Desinfektionsmittel"
+   },
+   {
+    "id": "insecticide",
+    "label_en": "Insecticide",
+    "label_de": "Insektizid"
+   },
+   {
+    "id": "repellent",
+    "label_en": "Insect repellent",
+    "label_de": "Insektenschutzmittel"
+   },
+   {
+    "id": "wood_preservative",
+    "label_en": "Wood preservative",
+    "label_de": "Holzschutzmittel"
+   }
+  ],
+  "authorised_use": [
+   {
+    "id": "surface",
+    "label_en": "surface disinfection",
+    "label_de": "die Flächendesinfektion"
+   },
+   {
+    "id": "hand",
+    "label_en": "hand disinfection",
+    "label_de": "die Händedesinfektion"
+   },
+   {
+    "id": "insects",
+    "label_en": "control of crawling insects",
+    "label_de": "die Bekämpfung kriechender Insekten"
+   },
+   {
+    "id": "wood",
+    "label_en": "preventive wood protection",
+    "label_de": "den vorbeugenden Holzschutz"
+   }
+  ],
+  "pp_type": [
+   {
+    "id": "herbicide",
+    "label_en": "Herbicide",
+    "label_de": "Herbizid"
+   },
+   {
+    "id": "fungicide",
+    "label_en": "Fungicide",
+    "label_de": "Fungizid"
+   },
+   {
+    "id": "insecticide",
+    "label_en": "Insecticide",
+    "label_de": "Insektizid"
+   }
+  ],
+  "pp_use": [
+   {
+    "id": "weeds",
+    "label_en": "weed control in ornamental gardens",
+    "label_de": "die Unkrautbekämpfung im Ziergarten"
+   },
+   {
+    "id": "fungal",
+    "label_en": "control of fungal diseases on fruit",
+    "label_de": "die Bekämpfung von Pilzkrankheiten an Obst"
+   },
+   {
+    "id": "pests",
+    "label_en": "control of sucking insects on vegetables",
+    "label_de": "die Bekämpfung saugender Insekten an Gemüse"
+   }
+  ],
+  "cleaning_purpose": [
+   {
+    "id": "laundry",
+    "label_en": "white and coloured laundry",
+    "label_de": "Weiß- und Buntwäsche"
+   },
+   {
+    "id": "dishes",
+    "label_en": "dishwashing",
+    "label_de": "das Geschirrspülen"
+   },
+   {
+    "id": "surfaces",
+    "label_en": "cleaning hard surfaces",
+    "label_de": "die Reinigung harter Oberflächen"
+   }
+  ],
+  "effect": [
+   {
+    "id": "bacteria",
+    "label_en": "reduction of bacteria on surfaces",
+    "label_de": "die Verringerung von Bakterien auf Oberflächen"
+   },
+   {
+    "id": "odour",
+    "label_en": "odour reduction",
+    "label_de": "die Geruchsminderung"
+   }
+  ],
+  "clp_hazardous": [
+   {
+    "id": "yes",
+    "label_en": "Yes, classified as hazardous under CLP",
+    "label_de": "Ja, nach CLP als gefährlich eingestuft"
+   },
+   {
+    "id": "no",
+    "label_en": "No",
+    "label_de": "Nein"
+   },
+   {
+    "id": "unknown",
+    "label_en": "Unknown",
+    "label_de": "Unbekannt"
+   }
+  ],
+  "hazard_type": [
+   {
+    "id": "flammable",
+    "label_en": "flammable",
+    "label_de": "entzündbar"
+   },
+   {
+    "id": "irritant",
+    "label_en": "causes skin irritation",
+    "label_de": "verursacht Hautreizungen"
+   },
+   {
+    "id": "eye_damage",
+    "label_en": "causes serious eye damage",
+    "label_de": "verursacht schwere Augenschäden"
+   },
+   {
+    "id": "aquatic",
+    "label_en": "harmful to aquatic life with long lasting effects",
+    "label_de": "schädlich für Wasserorganismen, mit langfristiger Wirkung"
+   }
+  ]
+ },
+ "domain_facts": {
+  "_doc": "Facts asked in question 6 whatever the topic, when the product domain needs a mandatory statement.",
+  "VEHICLE": [
+   {
+    "name": "model",
+    "type": "id",
+    "label_en": "Car model designation",
+    "label_de": "Modellbezeichnung"
+   },
+   {
+    "name": "car_consumption",
+    "type": "number",
+    "label_en": "Official combined energy consumption",
+    "label_de": "Offizieller kombinierter Energieverbrauch"
+   },
+   {
+    "name": "consumption_unit",
+    "type": "choice",
+    "label_en": "Consumption unit",
+    "label_de": "Einheit",
+    "options": "consumption_unit"
+   },
+   {
+    "name": "car_co2",
+    "type": "number",
+    "label_en": "Official combined CO2 emissions",
+    "label_de": "Offizielle kombinierte CO2-Emissionen",
+    "unit": "g/km"
+   },
+   {
+    "name": "co2_class",
+    "type": "choice",
+    "label_en": "CO2 class",
+    "label_de": "CO2-Klasse",
+    "options": "co2_class"
+   }
+  ],
+  "ENERGY_PRODUCT": [
+   {
+    "name": "energy_class",
+    "type": "choice",
+    "label_en": "Energy efficiency class on the label",
+    "label_de": "Energieeffizienzklasse auf dem Label",
+    "options": "energy_class"
+   }
+  ],
+  "BIOCIDE": [
+   {
+    "name": "biocide_type",
+    "type": "choice",
+    "label_en": "Product type",
+    "label_de": "Produktart",
+    "options": "biocide_type"
+   },
+   {
+    "name": "authorised_use",
+    "type": "choice",
+    "label_en": "Authorised use",
+    "label_de": "Zugelassene Verwendung",
+    "options": "authorised_use"
+   }
+  ],
+  "PESTICIDE": [
+   {
+    "name": "pp_type",
+    "type": "choice",
+    "label_en": "Product type",
+    "label_de": "Produktart",
+    "options": "pp_type"
+   },
+   {
+    "name": "pp_use",
+    "type": "choice",
+    "label_en": "Authorised use",
+    "label_de": "Zugelassene Verwendung",
+    "options": "pp_use"
+   },
+   {
+    "name": "pp_auth",
+    "type": "id",
+    "label_en": "Authorisation number",
+    "label_de": "Zulassungsnummer"
+   }
+  ],
+  "CHEMICAL": [
+   {
+    "name": "clp_hazardous",
+    "type": "choice",
+    "label_en": "Classified as hazardous under CLP?",
+    "label_de": "Nach CLP als gefährlich eingestuft?",
+    "options": "clp_hazardous"
+   },
+   {
+    "name": "hazard_type",
+    "type": "choice",
+    "label_en": "Main hazard on the label",
+    "label_de": "Hauptgefahr auf dem Etikett",
+    "options": "hazard_type"
+   }
+  ],
+  "ENERGY_SUPPLY": [
+   {
+    "name": "mix_renewable",
+    "type": "percent",
+    "label_en": "Energy mix: renewable share",
+    "label_de": "Energiemix: erneuerbarer Anteil",
+    "unit": "%",
+    "min": 0,
+    "max": 100
+   },
+   {
+    "name": "mix_other",
+    "type": "percent",
+    "label_en": "Energy mix: other sources",
+    "label_de": "Energiemix: sonstige Quellen",
+    "unit": "%",
+    "min": 0,
+    "max": 100
+   },
+   {
+    "name": "mix_co2",
+    "type": "number",
+    "label_en": "CO2 emissions of the mix",
+    "label_de": "CO2-Emissionen des Mix",
+    "unit": "g/kWh"
+   },
+   {
+    "name": "mix_waste",
+    "type": "number",
+    "label_en": "Radioactive waste of the mix",
+    "label_de": "Radioaktiver Abfall des Mix",
+    "unit": "g/kWh"
+   }
+  ]
+ },
+ "domain_facts_rules": {
+  "VEHICLE": "CA01",
+  "ENERGY_PRODUCT": "EN01",
+  "BIOCIDE": "BI02",
+  "PESTICIDE": "PP02",
+  "CHEMICAL": "CH01",
+  "ENERGY_SUPPLY": "RE02"
+ },
+ "topics": {
+  "general_benefit": {
+   "label_en": "General environmental benefit (e.g. 'eco-friendly')",
+   "label_de": "Allgemeiner Umweltvorteil (z. B. 'umweltfreundlich')",
+   "subjects": [
+    "product",
+    "service",
+    "company",
+    "unknown"
+   ],
+   "domains": null,
+   "audiences": [
+    "B2C",
+    "B2B"
+   ],
+   "scopes": [
+    "whole_product",
+    "company"
+   ],
+   "evidence": [
+    "eu_ecolabel_licence",
+    "lca_study",
+    "test_report",
+    "internal_measurement",
+    "none_yet"
+   ],
+   "evidence_b2c": [
+    "eu_ecolabel_licence",
+    "none_yet"
+   ],
+   "methods": [
+    {
+     "id": "eu_ecolabel",
+     "label_en": "EU Ecolabel criteria (Regulation (EC) No 66/2010)",
+     "label_de": "EU-Ecolabel-Kriterien (Verordnung (EG) Nr. 66/2010)",
+     "fill_en": "the EU Ecolabel criteria",
+     "fill_de": "den EU-Ecolabel-Kriterien"
+    },
+    {
+     "id": "pef",
+     "label_en": "PEF study",
+     "label_de": "PEF-Studie"
+    },
+    {
+     "id": "iso14067",
+     "label_en": "ISO 14067:2018",
+     "label_de": "ISO 14067:2018"
+    }
+   ],
+   "facts": [
+    {
+     "name": "ID",
+     "type": "id",
+     "label_en": "EU Ecolabel licence number",
+     "label_de": "EU-Ecolabel-Lizenznummer"
+    },
+    {
+     "name": "product_group",
+     "type": "id",
+     "label_en": "EU Ecolabel product group code",
+     "label_de": "Produktgruppe"
+    },
+    {
+     "name": "metric",
+     "type": "choice",
+     "label_en": "Metric (business audiences)",
+     "label_de": "Kennzahl",
+     "options": "metric"
+    },
+    {
+     "name": "X",
+     "type": "number",
+     "label_en": "Value",
+     "label_de": "Wert"
+    },
+    {
+     "name": "metric_unit",
+     "type": "choice",
+     "label_en": "Unit",
+     "label_de": "Einheit",
+     "options": "metric_unit"
+    },
+    {
+     "name": "functional_unit",
+     "type": "choice",
+     "label_en": "Per",
+     "label_de": "Bezug",
+     "options": "functional_unit"
+    },
+    {
+     "name": "model",
+     "type": "id",
+     "label_en": "Model or version",
+     "label_de": "Modell oder Version"
+    }
+   ],
+   "comparable": false,
+   "note": {
+    "en": "Generic claims such as 'eco-friendly' are banned for consumers unless the product shows recognised excellent environmental performance (rule P01). Only the EU Ecolabel route is offered here, or switch to a specific topic.",
+    "de": "Allgemeine Umweltaussagen wie 'umweltfreundlich' sind gegenüber Verbrauchern verboten, außer bei anerkannter hervorragender Umweltleistung (Regel P01)."
+   }
+  },
+  "recycled_content": {
+   "label_en": "Recycled content",
+   "label_de": "Rezyklatanteil",
+   "subjects": [
+    "product",
+    "unknown"
+   ],
+   "domains": null,
+   "audiences": [
+    "B2C",
+    "B2B"
+   ],
+   "scopes": [
+    "whole_product",
+    "part",
+    "packaging"
+   ],
+   "evidence": [
+    "third_party_certificate",
+    "supplier_declaration",
+    "internal_measurement",
+    "test_report",
+    "none_yet"
+   ],
+   "evidence_b2c": null,
+   "methods": [
+    {
+     "id": "ppwr_adopted",
+     "label_en": "PPWR calculation method (adopted implementing act)",
+     "label_de": "PPWR-Berechnungsmethode (erlassener Durchführungsrechtsakt)"
+    },
+    {
+     "id": "ppwr_not_adopted",
+     "label_en": "PPWR method not yet adopted for this packaging",
+     "label_de": "PPWR-Methode für diese Verpackung noch nicht erlassen",
+     "fill_en": "supplier records (no PPWR calculation method adopted yet)",
+     "fill_de": "Lieferantennachweise (noch keine PPWR-Berechnungsmethode erlassen)"
+    },
+    {
+     "id": "mass_balance",
+     "label_en": "mass balance with chain-of-custody records",
+     "label_de": "Massenbilanz mit Chain-of-Custody-Nachweisen"
+    },
+    {
+     "id": "supplier_records",
+     "label_en": "supplier delivery records",
+     "label_de": "Lieferscheinen der Lieferanten"
+    },
+    {
+     "id": "iso14021",
+     "label_en": "ISO 14021:2026 self-declared claim",
+     "label_de": "ISO 14021:2026 (Eigenerklärung)",
+     "fill_en": "records for a self-declared claim under ISO 14021:2026",
+     "fill_de": "Nachweise für eine Eigenerklärung nach ISO 14021:2026"
+    }
+   ],
+   "facts": [
+    {
+     "name": "X",
+     "type": "percent",
+     "label_en": "Recycled share by weight",
+     "label_de": "Rezyklatanteil (Gewicht)",
+     "unit": "%",
+     "min": 0,
+     "max": 100
+    },
+    {
+     "name": "material",
+     "type": "choice",
+     "label_en": "Material",
+     "label_de": "Material",
+     "options": "material"
+    },
+    {
+     "name": "battery_material",
+     "type": "choice",
+     "label_en": "Battery material",
+     "label_de": "Batteriematerial",
+     "options": "battery_material"
+    },
+    {
+     "name": "origin",
+     "type": "choice",
+     "label_en": "Origin of the recycled material",
+     "label_de": "Herkunft des Rezyklats",
+     "options": "recycled_origin"
+    },
+    {
+     "name": "scheme",
+     "type": "choice",
+     "label_en": "Certification scheme",
+     "label_de": "Zertifizierungssystem",
+     "options": "scheme"
+    },
+    {
+     "name": "ID",
+     "type": "id",
+     "label_en": "Certificate number",
+     "label_de": "Zertifikatsnummer"
+    },
+    {
+     "name": "Y",
+     "type": "percent",
+     "label_en": "Applicable PPWR minimum share (packaging)",
+     "label_de": "Geltender PPWR-Mindestanteil (Verpackung)",
+     "unit": "%",
+     "min": 0,
+     "max": 100
+    },
+    {
+     "name": "model",
+     "type": "id",
+     "label_en": "Model or battery type",
+     "label_de": "Modell oder Batterietyp"
+    }
+   ],
+   "comparable": true,
+   "note": null
+  },
+  "recyclability": {
+   "label_en": "Recyclability",
+   "label_de": "Recyclingfähigkeit",
+   "subjects": [
+    "product",
+    "unknown"
+   ],
+   "domains": null,
+   "audiences": [
+    "B2C",
+    "B2B"
+   ],
+   "scopes": [
+    "whole_product",
+    "part",
+    "packaging"
+   ],
+   "evidence": [
+    "test_report",
+    "third_party_certificate",
+    "supplier_declaration",
+    "internal_measurement",
+    "none_yet"
+   ],
+   "evidence_b2c": null,
+   "methods": [
+    {
+     "id": "ppwr_adopted",
+     "label_en": "PPWR design-for-recycling criteria (adopted delegated act)",
+     "label_de": "PPWR-Kriterien für recyclinggerechtes Design (erlassener delegierter Rechtsakt)"
+    },
+    {
+     "id": "ppwr_not_adopted",
+     "label_en": "PPWR method not yet adopted for this packaging",
+     "label_de": "PPWR-Methode für diese Verpackung noch nicht erlassen",
+     "fill_en": "a design-for-recycling assessment (no PPWR method adopted yet)",
+     "fill_de": "eine Bewertung der Recyclingfähigkeit (noch keine PPWR-Methode erlassen)"
+    },
+    {
+     "id": "collection_data",
+     "label_en": "collection and recycling data for the named markets",
+     "label_de": "Sammel- und Recyclingdaten für die genannten Märkte"
+    },
+    {
+     "id": "iso14021",
+     "label_en": "ISO 14021:2026 self-declared claim",
+     "label_de": "ISO 14021:2026 (Eigenerklärung)",
+     "fill_en": "a self-declared assessment under ISO 14021:2026",
+     "fill_de": "eine Eigenerklärung nach ISO 14021:2026"
+    }
+   ],
+   "facts": [
+    {
+     "name": "material",
+     "type": "choice",
+     "label_en": "Material",
+     "label_de": "Material",
+     "options": "material"
+    },
+    {
+     "name": "markets",
+     "type": "choice",
+     "label_en": "Markets",
+     "label_de": "Märkte",
+     "options": "markets"
+    },
+    {
+     "name": "collection_stream",
+     "type": "choice",
+     "label_en": "Collection stream",
+     "label_de": "Sammelsystem",
+     "options": "collection_stream"
+    },
+    {
+     "name": "grade",
+     "type": "choice",
+     "label_en": "PPWR recyclability performance grade",
+     "label_de": "PPWR-Recyclingfähigkeitsstufe",
+     "options": "grade"
+    }
+   ],
+   "comparable": false,
+   "note": null
+  },
+  "compostable": {
+   "label_en": "Compostable",
+   "label_de": "Kompostierbar",
+   "subjects": [
+    "product",
+    "unknown"
+   ],
+   "domains": null,
+   "audiences": [
+    "B2C",
+    "B2B"
+   ],
+   "scopes": [
+    "whole_product",
+    "part",
+    "packaging"
+   ],
+   "evidence": [
+    "test_report",
+    "third_party_certificate",
+    "none_yet"
+   ],
+   "evidence_b2c": null,
+   "methods": [
+    {
+     "id": "ppwr_composting",
+     "label_en": "the composting standard referred to in Regulation (EU) 2025/40",
+     "label_de": "der Kompostierungsnorm nach Verordnung (EU) 2025/40"
+    },
+    {
+     "id": "other_test",
+     "label_en": "an industrial composting test",
+     "label_de": "einem Test zur industriellen Kompostierbarkeit"
+    }
+   ],
+   "facts": [
+    {
+     "name": "route",
+     "type": "choice",
+     "label_en": "Disposal route",
+     "label_de": "Entsorgungsweg",
+     "options": "route"
+    }
+   ],
+   "comparable": false,
+   "note": null
+  },
+  "packaging_reduction": {
+   "label_en": "Less packaging",
+   "label_de": "Weniger Verpackung",
+   "subjects": [
+    "product",
+    "unknown"
+   ],
+   "domains": null,
+   "audiences": [
+    "B2C",
+    "B2B"
+   ],
+   "scopes": [
+    "whole_product",
+    "part",
+    "packaging"
+   ],
+   "evidence": [
+    "internal_measurement",
+    "test_report",
+    "supplier_declaration",
+    "none_yet"
+   ],
+   "evidence_b2c": null,
+   "methods": [
+    {
+     "id": "weighing",
+     "label_en": "weighing of the packaging unit",
+     "label_de": "Wiegen der Verpackungseinheit"
+    },
+    {
+     "id": "ppwr_not_adopted",
+     "label_en": "PPWR method not yet adopted for this packaging",
+     "label_de": "PPWR-Methode für diese Verpackung noch nicht erlassen",
+     "fill_en": "weighing of the packaging unit (no PPWR method adopted yet)",
+     "fill_de": "Wiegen der Verpackungseinheit (noch keine PPWR-Methode erlassen)"
+    }
+   ],
+   "facts": [
+    {
+     "name": "X",
+     "type": "percent",
+     "label_en": "Reduction in weight",
+     "label_de": "Gewichtsreduktion",
+     "unit": "%",
+     "min": 0,
+     "max": 100
+    },
+    {
+     "name": "weight_g",
+     "type": "number",
+     "label_en": "Packaging weight",
+     "label_de": "Verpackungsgewicht",
+     "unit": "g"
+    }
+   ],
+   "comparable": true,
+   "note": null,
+   "implies_packaging": true
+  },
+  "product_carbon_footprint": {
+   "label_en": "Product carbon footprint",
+   "label_de": "CO2-Fußabdruck des Produkts",
+   "subjects": [
+    "product",
+    "unknown",
+    "service"
+   ],
+   "domains": null,
+   "audiences": [
+    "B2C",
+    "B2B"
+   ],
+   "scopes": [
+    "whole_product",
+    "part"
+   ],
+   "evidence": [
+    "lca_study",
+    "third_party_certificate",
+    "supplier_declaration",
+    "none_yet"
+   ],
+   "evidence_b2c": null,
+   "methods": [
+    {
+     "id": "pef",
+     "label_en": "PEF study",
+     "label_de": "PEF-Studie"
+    },
+    {
+     "id": "pefcr",
+     "label_en": "PEF study under the PEFCR",
+     "label_de": "PEF-Studie nach PEFCR"
+    },
+    {
+     "id": "iso14067",
+     "label_en": "ISO 14067:2018",
+     "label_de": "ISO 14067:2018"
+    },
+    {
+     "id": "battery_cfp",
+     "label_en": "carbon footprint declaration under Regulation (EU) 2023/1542",
+     "label_de": "CO2-Fußabdruck-Erklärung nach Verordnung (EU) 2023/1542"
+    },
+    {
+     "id": "hts",
+     "label_en": "Harmonised technical specification",
+     "label_de": "harmonisierter technischer Spezifikation"
+    }
+   ],
+   "facts": [
+    {
+     "name": "X",
+     "type": "number",
+     "label_en": "Footprint value",
+     "label_de": "Fußabdruck",
+     "unit": "kg CO2e"
+    },
+    {
+     "name": "functional_unit",
+     "type": "choice",
+     "label_en": "Per",
+     "label_de": "Bezug",
+     "options": "functional_unit"
+    },
+    {
+     "name": "lifecycle",
+     "type": "choice",
+     "label_en": "Life-cycle stages covered",
+     "label_de": "Lebenszyklusphasen",
+     "options": "lifecycle"
+    },
+    {
+     "name": "model",
+     "type": "id",
+     "label_en": "Model or version",
+     "label_de": "Modell oder Version"
+    }
+   ],
+   "comparable": true,
+   "note": null
+  },
+  "climate_neutral_or_offset": {
+   "label_en": "Climate neutral or offset",
+   "label_de": "Klimaneutral oder kompensiert",
+   "subjects": [
+    "product",
+    "service",
+    "company",
+    "unknown"
+   ],
+   "domains": null,
+   "audiences": [
+    "B2C",
+    "B2B"
+   ],
+   "scopes": [
+    "whole_product",
+    "company"
+   ],
+   "evidence": [
+    "third_party_certificate",
+    "internal_measurement",
+    "lca_study",
+    "supplier_declaration",
+    "none_yet"
+   ],
+   "evidence_b2c": null,
+   "methods": [
+    {
+     "id": "crcf",
+     "label_en": "Regulation (EU) 2024/3012 (CRCF)",
+     "label_de": "Verordnung (EU) 2024/3012 (CRCF)"
+    },
+    {
+     "id": "other_standard",
+     "label_en": "another carbon credit standard",
+     "label_de": "einem anderen Standard für CO2-Zertifikate"
+    }
+   ],
+   "facts": [
+    {
+     "name": "X",
+     "type": "number",
+     "label_en": "Emissions or credits",
+     "label_de": "Emissionen oder Zertifikate",
+     "unit": "t CO2e"
+    },
+    {
+     "name": "Y",
+     "type": "number",
+     "label_en": "Credits financed",
+     "label_de": "Finanzierte Zertifikate",
+     "unit": "t CO2e"
+    },
+    {
+     "name": "Z",
+     "type": "percent",
+     "label_en": "Reduction target",
+     "label_de": "Reduktionsziel",
+     "unit": "%",
+     "min": 0,
+     "max": 100
+    },
+    {
+     "name": "target_year",
+     "type": "year",
+     "label_en": "Target year",
+     "label_de": "Zieljahr"
+    },
+    {
+     "name": "base_year",
+     "type": "year",
+     "label_en": "Base year",
+     "label_de": "Basisjahr"
+    },
+    {
+     "name": "ghg_scope",
+     "type": "choice",
+     "label_en": "Emission scopes",
+     "label_de": "Emissionsbereiche",
+     "options": "ghg_scope"
+    },
+    {
+     "name": "project_type",
+     "type": "choice",
+     "label_en": "Project type",
+     "label_de": "Projektart",
+     "options": "project_type"
+    },
+    {
+     "name": "unit_type",
+     "type": "choice",
+     "label_en": "Unit type",
+     "label_de": "Art der Einheit",
+     "options": "unit_type"
+    },
+    {
+     "name": "functional_unit",
+     "type": "choice",
+     "label_en": "Per",
+     "label_de": "Bezug",
+     "options": "functional_unit"
+    },
+    {
+     "name": "lifecycle",
+     "type": "choice",
+     "label_en": "Life-cycle stages",
+     "label_de": "Lebenszyklusphasen",
+     "options": "lifecycle"
+    }
+   ],
+   "comparable": false,
+   "note": {
+    "en": "For consumer products, a neutrality sentence is not possible (rules P03 and CR03). Only a separate statement about financing climate projects is offered.",
+    "de": "Für Produkte gegenüber Verbrauchern ist keine Neutralitätsaussage möglich (Regeln P03 und CR03)."
+   }
+  },
+  "carbon_removal": {
+   "label_en": "Carbon removal",
+   "label_de": "CO2-Entnahme",
+   "subjects": [
+    "product",
+    "service",
+    "company",
+    "unknown"
+   ],
+   "domains": null,
+   "audiences": [
+    "B2C",
+    "B2B"
+   ],
+   "scopes": [
+    "company"
+   ],
+   "evidence": [
+    "third_party_certificate",
+    "none_yet"
+   ],
+   "evidence_b2c": null,
+   "methods": [
+    {
+     "id": "crcf",
+     "label_en": "Regulation (EU) 2024/3012 (CRCF)",
+     "label_de": "Verordnung (EU) 2024/3012 (CRCF)"
+    }
+   ],
+   "facts": [
+    {
+     "name": "X",
+     "type": "number",
+     "label_en": "Quantity",
+     "label_de": "Menge",
+     "unit": "t CO2e"
+    },
+    {
+     "name": "unit_type",
+     "type": "choice",
+     "label_en": "Unit type",
+     "label_de": "Art der Einheit",
+     "options": "unit_type"
+    },
+    {
+     "name": "activity",
+     "type": "choice",
+     "label_en": "Storage activity",
+     "label_de": "Speicherung in",
+     "options": "activity"
+    },
+    {
+     "name": "end_year",
+     "type": "year",
+     "label_en": "End of monitoring period",
+     "label_de": "Ende des Überwachungszeitraums"
+    },
+    {
+     "name": "ID",
+     "type": "id",
+     "label_en": "Registry reference",
+     "label_de": "Registerreferenz"
+    }
+   ],
+   "comparable": false,
+   "note": null
+  },
+  "company_climate_target": {
+   "label_en": "Company climate target",
+   "label_de": "Klimaziel des Unternehmens",
+   "subjects": [
+    "product",
+    "service",
+    "company",
+    "unknown"
+   ],
+   "domains": null,
+   "audiences": [
+    "B2C",
+    "B2B"
+   ],
+   "scopes": [
+    "company"
+   ],
+   "evidence": [
+    "third_party_certificate",
+    "internal_measurement",
+    "lca_study",
+    "none_yet"
+   ],
+   "evidence_b2c": null,
+   "methods": [
+    {
+     "id": "transition_plan",
+     "label_en": "a published transition plan",
+     "label_de": "einem veröffentlichten Übergangsplan"
+    },
+    {
+     "id": "iso14068",
+     "label_en": "ISO 14068 (name only)",
+     "label_de": "ISO 14068",
+     "fill_en": "ISO 14068",
+     "fill_de": "ISO 14068"
+    }
+   ],
+   "facts": [
+    {
+     "name": "X",
+     "type": "percent",
+     "label_en": "Planned reduction",
+     "label_de": "Geplante Reduktion",
+     "unit": "%",
+     "min": 0,
+     "max": 100
+    },
+    {
+     "name": "target_year",
+     "type": "year",
+     "label_en": "Target year",
+     "label_de": "Zieljahr"
+    },
+    {
+     "name": "base_year",
+     "type": "year",
+     "label_en": "Base year",
+     "label_de": "Basisjahr"
+    },
+    {
+     "name": "interim_year",
+     "type": "year",
+     "label_en": "Interim target year",
+     "label_de": "Zwischenzieljahr"
+    },
+    {
+     "name": "Y",
+     "type": "percent",
+     "label_en": "Interim reduction",
+     "label_de": "Zwischenziel",
+     "unit": "%",
+     "min": 0,
+     "max": 100
+    },
+    {
+     "name": "ghg_scope",
+     "type": "choice",
+     "label_en": "Emission scopes",
+     "label_de": "Emissionsbereiche",
+     "options": "ghg_scope"
+    },
+    {
+     "name": "framework",
+     "type": "choice",
+     "label_en": "Framework",
+     "label_de": "Rahmenwerk",
+     "options": "framework"
+    }
+   ],
+   "comparable": false,
+   "note": null
+  },
+  "emission_reduction": {
+   "label_en": "Emission reduction achieved",
+   "label_de": "Erreichte Emissionsminderung",
+   "subjects": [
+    "product",
+    "service",
+    "company",
+    "unknown"
+   ],
+   "domains": null,
+   "audiences": [
+    "B2C",
+    "B2B"
+   ],
+   "scopes": [
+    "whole_product",
+    "site",
+    "company"
+   ],
+   "evidence": [
+    "lca_study",
+    "internal_measurement",
+    "third_party_certificate",
+    "emas_registration",
+    "none_yet"
+   ],
+   "evidence_b2c": null,
+   "methods": [
+    {
+     "id": "iso14067",
+     "label_en": "ISO 14067:2018",
+     "label_de": "ISO 14067:2018"
+    },
+    {
+     "id": "pef",
+     "label_en": "PEF study",
+     "label_de": "PEF-Studie"
+    },
+    {
+     "id": "ghg_inventory",
+     "label_en": "our greenhouse gas inventory",
+     "label_de": "unserer Treibhausgasbilanz"
+    },
+    {
+     "id": "emas_statement",
+     "label_en": "our EMAS environmental statement",
+     "label_de": "unserer EMAS-Umwelterklärung"
+    }
+   ],
+   "facts": [
+    {
+     "name": "X",
+     "type": "percent",
+     "label_en": "Reduction",
+     "label_de": "Reduktion",
+     "unit": "%",
+     "min": 0,
+     "max": 100
+    },
+    {
+     "name": "base_year",
+     "type": "year",
+     "label_en": "Base year",
+     "label_de": "Basisjahr"
+    },
+    {
+     "name": "ghg_scope",
+     "type": "choice",
+     "label_en": "Emission scopes",
+     "label_de": "Emissionsbereiche",
+     "options": "ghg_scope"
+    },
+    {
+     "name": "lifecycle",
+     "type": "choice",
+     "label_en": "Life-cycle stages",
+     "label_de": "Lebenszyklusphasen",
+     "options": "lifecycle"
+    },
+    {
+     "name": "functional_unit",
+     "type": "choice",
+     "label_en": "Per",
+     "label_de": "Bezug",
+     "options": "functional_unit"
+    }
+   ],
+   "comparable": true,
+   "note": null
+  },
+  "renewable_electricity": {
+   "label_en": "Renewable electricity",
+   "label_de": "Erneuerbarer Strom",
+   "subjects": [
+    "product",
+    "service",
+    "company",
+    "unknown"
+   ],
+   "domains": null,
+   "audiences": [
+    "B2C",
+    "B2B"
+   ],
+   "scopes": [
+    "whole_product",
+    "part",
+    "site",
+    "company"
+   ],
+   "evidence": [
+    "supplier_declaration",
+    "third_party_certificate",
+    "internal_measurement",
+    "none_yet"
+   ],
+   "evidence_b2c": null,
+   "methods": [
+    {
+     "id": "go",
+     "label_en": "cancelled guarantees of origin",
+     "label_de": "entwerteten Herkunftsnachweisen"
+    },
+    {
+     "id": "ppa_go",
+     "label_en": "a power purchase agreement with cancelled guarantees of origin",
+     "label_de": "einem Stromabnahmevertrag mit entwerteten Herkunftsnachweisen"
+    }
+   ],
+   "facts": [
+    {
+     "name": "X",
+     "type": "percent",
+     "label_en": "Renewable share",
+     "label_de": "Erneuerbarer Anteil",
+     "unit": "%",
+     "min": 0,
+     "max": 100
+    },
+    {
+     "name": "Y",
+     "type": "number",
+     "label_en": "Number of sites",
+     "label_de": "Anzahl Standorte",
+     "unit": "sites"
+    },
+    {
+     "name": "lifecycle",
+     "type": "choice",
+     "label_en": "Life-cycle stage",
+     "label_de": "Lebenszyklusphase",
+     "options": "lifecycle"
+    },
+    {
+     "name": "markets",
+     "type": "choice",
+     "label_en": "Country of origin",
+     "label_de": "Herkunftsland",
+     "options": "markets"
+    }
+   ],
+   "comparable": false,
+   "note": null
+  },
+  "energy_efficiency": {
+   "label_en": "Energy efficiency",
+   "label_de": "Energieeffizienz",
+   "subjects": [
+    "product",
+    "unknown"
+   ],
+   "domains": [
+    "ENERGY_PRODUCT",
+    "ECODESIGN",
+    "TYRE",
+    "VEHICLE"
+   ],
+   "audiences": [
+    "B2C",
+    "B2B"
+   ],
+   "scopes": [
+    "whole_product"
+   ],
+   "evidence": [
+    "test_report",
+    "supplier_declaration",
+    "third_party_certificate",
+    "none_yet"
+   ],
+   "evidence_b2c": null,
+   "methods": [
+    {
+     "id": "energy_label",
+     "label_en": "the EU energy label",
+     "label_de": "dem EU-Energielabel"
+    },
+    {
+     "id": "tyre_label",
+     "label_en": "the EU tyre label",
+     "label_de": "dem EU-Reifenlabel"
+    },
+    {
+     "id": "test_method",
+     "label_en": "the harmonised test method",
+     "label_de": "dem harmonisierten Prüfverfahren"
+    }
+   ],
+   "facts": [
+    {
+     "name": "model",
+     "type": "id",
+     "label_en": "Model",
+     "label_de": "Modell"
+    },
+    {
+     "name": "X",
+     "type": "number",
+     "label_en": "Energy consumption",
+     "label_de": "Energieverbrauch",
+     "unit": "kWh"
+    },
+    {
+     "name": "unit_period",
+     "type": "choice",
+     "label_en": "Per",
+     "label_de": "Bezug",
+     "options": "unit_period"
+    },
+    {
+     "name": "tyre_class",
+     "type": "choice",
+     "label_en": "Fuel efficiency class",
+     "label_de": "Kraftstoffeffizienzklasse",
+     "options": "tyre_class"
+    },
+    {
+     "name": "tyre_class2",
+     "type": "choice",
+     "label_en": "Wet grip class",
+     "label_de": "Nasshaftungsklasse",
+     "options": "tyre_class"
+    },
+    {
+     "name": "noise_db",
+     "type": "number",
+     "label_en": "External rolling noise",
+     "label_de": "Externes Rollgeräusch",
+     "unit": "dB"
+    },
+    {
+     "name": "standby_w",
+     "type": "number",
+     "label_en": "Standby power",
+     "label_de": "Leistungsaufnahme im Bereitschaftsbetrieb",
+     "unit": "W"
+    }
+   ],
+   "comparable": false,
+   "note": null
+  },
+  "durability": {
+   "label_en": "Durability",
+   "label_de": "Haltbarkeit",
+   "subjects": [
+    "product",
+    "unknown"
+   ],
+   "domains": null,
+   "audiences": [
+    "B2C",
+    "B2B"
+   ],
+   "scopes": [
+    "whole_product",
+    "part"
+   ],
+   "evidence": [
+    "test_report",
+    "third_party_certificate",
+    "supplier_declaration",
+    "internal_measurement",
+    "none_yet"
+   ],
+   "evidence_b2c": null,
+   "methods": [
+    {
+     "id": "test_standard",
+     "label_en": "the stated test standard",
+     "label_de": "der genannten Prüfnorm"
+    },
+    {
+     "id": "battery_doc",
+     "label_en": "the battery performance and durability document",
+     "label_de": "dem Leistungs- und Haltbarkeitsdokument der Batterie"
+    }
+   ],
+   "facts": [
+    {
+     "name": "X",
+     "type": "number",
+     "label_en": "Tested or guaranteed amount",
+     "label_de": "Geprüfte oder garantierte Menge"
+    },
+    {
+     "name": "dur_unit",
+     "type": "choice",
+     "label_en": "Unit",
+     "label_de": "Einheit",
+     "options": "dur_unit"
+    },
+    {
+     "name": "ID",
+     "type": "id",
+     "label_en": "Test report number",
+     "label_de": "Prüfberichtsnummer"
+    },
+    {
+     "name": "model",
+     "type": "id",
+     "label_en": "Model",
+     "label_de": "Modell"
+    },
+    {
+     "name": "guarantee_years",
+     "type": "number",
+     "label_en": "Commercial guarantee of durability",
+     "label_de": "Gewerbliche Haltbarkeitsgarantie",
+     "unit": "years"
+    }
+   ],
+   "comparable": false,
+   "note": null
+  },
+  "repairability": {
+   "label_en": "Repairability",
+   "label_de": "Reparierbarkeit",
+   "subjects": [
+    "product",
+    "unknown"
+   ],
+   "domains": null,
+   "audiences": [
+    "B2C",
+    "B2B"
+   ],
+   "scopes": [
+    "whole_product",
+    "part"
+   ],
+   "evidence": [
+    "internal_measurement",
+    "supplier_declaration",
+    "test_report",
+    "none_yet"
+   ],
+   "evidence_b2c": null,
+   "methods": [],
+   "facts": [
+    {
+     "name": "repair_party",
+     "type": "choice",
+     "label_en": "Who can repair",
+     "label_de": "Wer reparieren kann",
+     "options": "repair_party"
+    },
+    {
+     "name": "until_year",
+     "type": "year",
+     "label_en": "Spare parts available until",
+     "label_de": "Ersatzteile verfügbar bis"
+    },
+    {
+     "name": "X",
+     "type": "number",
+     "label_en": "Spare parts supplied for",
+     "label_de": "Ersatzteile lieferbar für",
+     "unit": "years"
+    },
+    {
+     "name": "model",
+     "type": "id",
+     "label_en": "Model",
+     "label_de": "Modell"
+    }
+   ],
+   "comparable": false,
+   "note": null
+  },
+  "free_from_substances": {
+   "label_en": "Free from a substance",
+   "label_de": "Frei von einem Stoff",
+   "subjects": [
+    "product",
+    "unknown"
+   ],
+   "domains": null,
+   "audiences": [
+    "B2C",
+    "B2B"
+   ],
+   "scopes": [
+    "whole_product",
+    "part"
+   ],
+   "evidence": [
+    "test_report",
+    "supplier_declaration",
+    "third_party_certificate",
+    "none_yet"
+   ],
+   "evidence_b2c": null,
+   "methods": [
+    {
+     "id": "reach_candidate",
+     "label_en": "the REACH Candidate List",
+     "label_de": "der REACH-Kandidatenliste"
+    },
+    {
+     "id": "lab_test",
+     "label_en": "laboratory analysis",
+     "label_de": "Laboranalyse"
+    }
+   ],
+   "facts": [
+    {
+     "name": "substance",
+     "type": "choice",
+     "label_en": "Substance or property",
+     "label_de": "Stoff oder Eigenschaft",
+     "options": "substance"
+    },
+    {
+     "name": "X",
+     "type": "percent",
+     "label_en": "Measured content below",
+     "label_de": "Gemessener Gehalt unter",
+     "unit": "%",
+     "min": 0,
+     "max": 100
+    },
+    {
+     "name": "list_date",
+     "type": "date",
+     "label_en": "Candidate List version date",
+     "label_de": "Stand der Kandidatenliste"
+    },
+    {
+     "name": "ID",
+     "type": "id",
+     "label_en": "Test report or authorisation number",
+     "label_de": "Prüfbericht- oder Zulassungsnummer"
+    },
+    {
+     "name": "product_category",
+     "type": "choice",
+     "label_en": "Product category",
+     "label_de": "Produktkategorie",
+     "options": "product_category"
+    },
+    {
+     "name": "legal_act",
+     "type": "choice",
+     "label_en": "Legal act",
+     "label_de": "Rechtsakt",
+     "options": "legal_act"
+    },
+    {
+     "name": "cleaning_purpose",
+     "type": "choice",
+     "label_en": "Cleaning purpose",
+     "label_de": "Reinigungszweck",
+     "options": "cleaning_purpose"
+    },
+    {
+     "name": "effect",
+     "type": "choice",
+     "label_en": "Tested effect",
+     "label_de": "Geprüfte Wirkung",
+     "options": "effect"
+    }
+   ],
+   "comparable": false,
+   "note": {
+    "en": "Legal minimums may not be presented as a special feature (rules P05, EE01, DT01, CS02). Where the law already requires it, the wording stays neutral.",
+    "de": "Gesetzliche Mindestanforderungen dürfen nicht als Besonderheit dargestellt werden (Regeln P05, EE01, DT01, CS02)."
+   }
+  },
+  "organic": {
+   "label_en": "Organic",
+   "label_de": "Bio",
+   "subjects": [
+    "product",
+    "unknown"
+   ],
+   "domains": [
+    "FOOD",
+    "ORGANIC",
+    "TEXTILE"
+   ],
+   "audiences": [
+    "B2C",
+    "B2B"
+   ],
+   "scopes": [
+    "whole_product"
+   ],
+   "evidence": [
+    "third_party_certificate",
+    "none_yet"
+   ],
+   "evidence_b2c": null,
+   "methods": [
+    {
+     "id": "reg848",
+     "label_en": "Regulation (EU) 2018/848",
+     "label_de": "Verordnung (EU) 2018/848"
+    }
+   ],
+   "facts": [
+    {
+     "name": "organic_share",
+     "type": "choice",
+     "label_en": "Organic share of agricultural ingredients",
+     "label_de": "Bio-Anteil",
+     "options": "organic_share"
+    },
+    {
+     "name": "X",
+     "type": "percent",
+     "label_en": "Organic share",
+     "label_de": "Bio-Anteil",
+     "unit": "%",
+     "min": 0,
+     "max": 100
+    },
+    {
+     "name": "ingredient",
+     "type": "choice",
+     "label_en": "Organic ingredient",
+     "label_de": "Bio-Zutat",
+     "options": "ingredient"
+    },
+    {
+     "name": "ID",
+     "type": "id",
+     "label_en": "Control body code or certificate",
+     "label_de": "Code der Kontrollstelle oder Zertifikat"
+    },
+    {
+     "name": "farming_place",
+     "type": "choice",
+     "label_en": "Place of farming",
+     "label_de": "Ort der Erzeugung",
+     "options": "farming_place"
+    },
+    {
+     "name": "fibre1",
+     "type": "choice",
+     "label_en": "Main fibre",
+     "label_de": "Hauptfaser",
+     "options": "fibre"
+    },
+    {
+     "name": "fibre2",
+     "type": "choice",
+     "label_en": "Second fibre",
+     "label_de": "Zweite Faser",
+     "options": "fibre"
+    },
+    {
+     "name": "Y",
+     "type": "percent",
+     "label_en": "Second fibre share",
+     "label_de": "Anteil zweite Faser",
+     "unit": "%",
+     "min": 0,
+     "max": 100
+    },
+    {
+     "name": "Z",
+     "type": "percent",
+     "label_en": "Organically grown share of the main fibre",
+     "label_de": "Bio-Anteil der Hauptfaser",
+     "unit": "%",
+     "min": 0,
+     "max": 100
+    },
+    {
+     "name": "scheme",
+     "type": "choice",
+     "label_en": "Certification scheme",
+     "label_de": "Zertifizierungssystem",
+     "options": "scheme"
+    }
+   ],
+   "comparable": false,
+   "note": null
+  },
+  "deforestation_free": {
+   "label_en": "Deforestation-free",
+   "label_de": "Entwaldungsfrei",
+   "subjects": [
+    "product",
+    "unknown"
+   ],
+   "domains": [
+    "DEFORESTATION"
+   ],
+   "audiences": [
+    "B2C",
+    "B2B"
+   ],
+   "scopes": [
+    "whole_product"
+   ],
+   "evidence": [
+    "supplier_declaration",
+    "third_party_certificate",
+    "internal_measurement",
+    "none_yet"
+   ],
+   "evidence_b2c": null,
+   "methods": [
+    {
+     "id": "eudr_dds",
+     "label_en": "EUDR due diligence statement",
+     "label_de": "EUDR-Sorgfaltserklärung"
+    }
+   ],
+   "facts": [
+    {
+     "name": "commodity",
+     "type": "choice",
+     "label_en": "Commodity",
+     "label_de": "Rohstoff",
+     "options": "commodity"
+    },
+    {
+     "name": "product_category",
+     "type": "choice",
+     "label_en": "Product category",
+     "label_de": "Produktkategorie",
+     "options": "product_category"
+    },
+    {
+     "name": "ID",
+     "type": "id",
+     "label_en": "Due diligence statement reference",
+     "label_de": "Referenz der Sorgfaltserklärung"
+    }
+   ],
+   "comparable": false,
+   "note": null
+  },
+  "fibre_composition": {
+   "label_en": "Fibre composition",
+   "label_de": "Faserzusammensetzung",
+   "subjects": [
+    "product",
+    "unknown"
+   ],
+   "domains": [
+    "TEXTILE"
+   ],
+   "audiences": [
+    "B2C",
+    "B2B"
+   ],
+   "scopes": [
+    "whole_product"
+   ],
+   "evidence": [
+    "test_report",
+    "supplier_declaration",
+    "third_party_certificate",
+    "internal_measurement",
+    "none_yet"
+   ],
+   "evidence_b2c": null,
+   "methods": [
+    {
+     "id": "fibre_analysis",
+     "label_en": "fibre analysis under Regulation (EU) No 1007/2011",
+     "label_de": "Faseranalyse nach Verordnung (EU) Nr. 1007/2011"
+    }
+   ],
+   "facts": [
+    {
+     "name": "fibre_count",
+     "type": "choice",
+     "label_en": "Number of fibres",
+     "label_de": "Anzahl Fasern",
+     "options": "fibre_count"
+    },
+    {
+     "name": "fibre1",
+     "type": "choice",
+     "label_en": "Main fibre",
+     "label_de": "Hauptfaser",
+     "options": "fibre"
+    },
+    {
+     "name": "X",
+     "type": "percent",
+     "label_en": "Main fibre share",
+     "label_de": "Anteil Hauptfaser",
+     "unit": "%",
+     "min": 0,
+     "max": 100
+    },
+    {
+     "name": "fibre2",
+     "type": "choice",
+     "label_en": "Second fibre",
+     "label_de": "Zweite Faser",
+     "options": "fibre"
+    },
+    {
+     "name": "Y",
+     "type": "percent",
+     "label_en": "Second fibre share",
+     "label_de": "Anteil zweite Faser",
+     "unit": "%",
+     "min": 0,
+     "max": 100
+    },
+    {
+     "name": "Z",
+     "type": "percent",
+     "label_en": "Certified share of the main fibre",
+     "label_de": "Zertifizierter Anteil der Hauptfaser",
+     "unit": "%",
+     "min": 0,
+     "max": 100
+    },
+    {
+     "name": "scheme",
+     "type": "choice",
+     "label_en": "Certification scheme",
+     "label_de": "Zertifizierungssystem",
+     "options": "scheme"
+    },
+    {
+     "name": "ID",
+     "type": "id",
+     "label_en": "Certificate number",
+     "label_de": "Zertifikatsnummer"
+    }
+   ],
+   "comparable": false,
+   "note": null
+  },
+  "eco_label": {
+   "label_en": "Eco label",
+   "label_de": "Umweltzeichen",
+   "subjects": [
+    "product",
+    "unknown",
+    "service"
+   ],
+   "domains": null,
+   "audiences": [
+    "B2C",
+    "B2B"
+   ],
+   "scopes": [
+    "whole_product"
+   ],
+   "evidence": [
+    "eu_ecolabel_licence",
+    "third_party_certificate",
+    "none_yet"
+   ],
+   "evidence_b2c": null,
+   "methods": [
+    {
+     "id": "eu_ecolabel",
+     "label_en": "EU Ecolabel criteria (Regulation (EC) No 66/2010)",
+     "label_de": "EU-Ecolabel-Kriterien"
+    },
+    {
+     "id": "iso14024",
+     "label_en": "ISO 14024:2026 (name only)",
+     "label_de": "ISO 14024:2026",
+     "fill_en": "ISO 14024:2026",
+     "fill_de": "ISO 14024:2026"
+    }
+   ],
+   "facts": [
+    {
+     "name": "ID",
+     "type": "id",
+     "label_en": "Licence or certificate number",
+     "label_de": "Lizenz- oder Zertifikatsnummer"
+    },
+    {
+     "name": "product_group",
+     "type": "id",
+     "label_en": "Product group code",
+     "label_de": "Produktgruppe"
+    },
+    {
+     "name": "scheme",
+     "type": "choice",
+     "label_en": "Scheme",
+     "label_de": "System",
+     "options": "scheme"
+    }
+   ],
+   "comparable": false,
+   "note": null
+  },
+  "emas": {
+   "label_en": "EMAS registration",
+   "label_de": "EMAS-Registrierung",
+   "subjects": [
+    "product",
+    "service",
+    "company",
+    "unknown"
+   ],
+   "domains": null,
+   "audiences": [
+    "B2C",
+    "B2B"
+   ],
+   "scopes": [
+    "site",
+    "company"
+   ],
+   "evidence": [
+    "emas_registration",
+    "none_yet"
+   ],
+   "evidence_b2c": null,
+   "methods": [
+    {
+     "id": "emas_statement",
+     "label_en": "EMAS environmental statement",
+     "label_de": "EMAS-Umwelterklärung"
+    }
+   ],
+   "facts": [
+    {
+     "name": "ID",
+     "type": "id",
+     "label_en": "EMAS registration number",
+     "label_de": "EMAS-Registrierungsnummer"
+    },
+    {
+     "name": "X",
+     "type": "percent",
+     "label_en": "Waste reduction at the site",
+     "label_de": "Abfallreduktion am Standort",
+     "unit": "%",
+     "min": 0,
+     "max": 100
+    },
+    {
+     "name": "base_year",
+     "type": "year",
+     "label_en": "Base year",
+     "label_de": "Basisjahr"
+    }
+   ],
+   "comparable": false,
+   "note": null
+  },
+  "taxonomy": {
+   "label_en": "EU Taxonomy",
+   "label_de": "EU-Taxonomie",
+   "subjects": [
+    "company"
+   ],
+   "domains": null,
+   "audiences": [
+    "B2C",
+    "B2B"
+   ],
+   "scopes": [
+    "company"
+   ],
+   "evidence": [
+    "third_party_certificate",
+    "internal_measurement",
+    "none_yet"
+   ],
+   "evidence_b2c": null,
+   "methods": [
+    {
+     "id": "taxonomy_kpi",
+     "label_en": "Taxonomy indicators under Article 8 of Regulation (EU) 2020/852",
+     "label_de": "Taxonomie-Kennzahlen nach Artikel 8 der Verordnung (EU) 2020/852"
+    }
+   ],
+   "facts": [
+    {
+     "name": "X",
+     "type": "percent",
+     "label_en": "Aligned share",
+     "label_de": "Taxonomiekonformer Anteil",
+     "unit": "%",
+     "min": 0,
+     "max": 100
+    },
+    {
+     "name": "Y",
+     "type": "percent",
+     "label_en": "Eligible share",
+     "label_de": "Taxonomiefähiger Anteil",
+     "unit": "%",
+     "min": 0,
+     "max": 100
+    },
+    {
+     "name": "kpi",
+     "type": "choice",
+     "label_en": "Indicator",
+     "label_de": "Kennzahl",
+     "options": "kpi"
+    },
+    {
+     "name": "report_name",
+     "type": "choice",
+     "label_en": "Published in",
+     "label_de": "Veröffentlicht in",
+     "options": "report_name"
+    }
+   ],
+   "comparable": false,
+   "note": null
+  },
+  "reporting_status": {
+   "label_en": "Sustainability reporting status",
+   "label_de": "Status der Nachhaltigkeitsberichterstattung",
+   "subjects": [
+    "company"
+   ],
+   "domains": null,
+   "audiences": [
+    "B2C",
+    "B2B"
+   ],
+   "scopes": [
+    "company"
+   ],
+   "evidence": [
+    "third_party_certificate",
+    "internal_measurement",
+    "none_yet"
+   ],
+   "evidence_b2c": null,
+   "methods": [],
+   "facts": [
+    {
+     "name": "assurance_level",
+     "type": "choice",
+     "label_en": "Assurance level",
+     "label_de": "Prüfungssicherheit",
+     "options": "assurance_level"
+    },
+    {
+     "name": "reporting_standard",
+     "type": "choice",
+     "label_en": "Standard followed",
+     "label_de": "Angewandter Standard",
+     "options": "reporting_standard"
+    },
+    {
+     "name": "legal_basis",
+     "type": "choice",
+     "label_en": "Published under",
+     "label_de": "Veröffentlicht nach",
+     "options": "legal_basis"
+    }
+   ],
+   "comparable": false,
+   "note": null
+  },
+  "transport_emissions": {
+   "label_en": "Transport emissions",
+   "label_de": "Transportemissionen",
+   "subjects": [
+    "service",
+    "company"
+   ],
+   "domains": null,
+   "audiences": [
+    "B2C",
+    "B2B"
+   ],
+   "scopes": [
+    "whole_product",
+    "company"
+   ],
+   "evidence": [
+    "internal_measurement",
+    "third_party_certificate",
+    "lca_study",
+    "none_yet"
+   ],
+   "evidence_b2c": null,
+   "methods": [
+    {
+     "id": "en_iso_14083",
+     "label_en": "EN ISO 14083",
+     "label_de": "EN ISO 14083"
+    },
+    {
+     "id": "reg_2026_1030",
+     "label_en": "Regulation (EU) 2026/1030 common methodology",
+     "label_de": "gemeinsame Methode nach Verordnung (EU) 2026/1030"
+    }
+   ],
+   "facts": [
+    {
+     "name": "X",
+     "type": "number",
+     "label_en": "Emissions of the shipment",
+     "label_de": "Emissionen der Sendung",
+     "unit": "kg CO2e"
+    },
+    {
+     "name": "Y",
+     "type": "number",
+     "label_en": "Emission intensity",
+     "label_de": "Emissionsintensität",
+     "unit": "g CO2e per tonne-km"
+    }
+   ],
+   "comparable": false,
+   "note": null
+  }
+ }
+}

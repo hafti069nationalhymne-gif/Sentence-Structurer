@@ -1,0 +1,31 @@
+# ClaimComposer settings. Changes made in the settings panel are stored in
+# userdata/settings.json and take precedence over this file.
+
+[server]
+# The server always binds to 127.0.0.1. Other hosts are ignored on purpose.
+host = "127.0.0.1"
+# 0 = pick a free port automatically.
+port = 0
+
+[ollama]
+# Optional AI for tone, translation and short explanations.
+enabled = true
+# "local": Ollama on this computer (the model is downloaded once).
+# "cloud": Ollama Cloud at https://ollama.com with an API key (nothing is downloaded).
+#          Put the key into OLLAMA_API_KEY.txt in the ClaimComposer folder (or the OLLAMA_API_KEY
+#          environment variable). Never put the key in this file.
+source = "local"
+# "auto": ClaimComposer picks the best-fitting model your key can use (see docs/MODEL_CHOICE.md).
+cloud_model = "auto"
+url = "http://127.0.0.1:11434"
+# Local Qwen model, chosen by hardware during setup (2b / 4b / 9b); see docs/MODEL_CHOICE.md.
+chat_model = "qwen3.5:4b"
+chat_model_large = "qwen3.5:9b"
+# Let the AI re-translate German drafts that nobody has reviewed yet. Off: in tests the prepared German
+# drafts read better than the small model's translations. Empty German texts are always translated.
+translate_unreviewed = false
+timeout_s = 90
+
+[app]
+review_mode = false
+usability_mode = false

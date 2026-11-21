@@ -1,0 +1,8 @@
+# ClaimComposer: your Ollama Cloud API key
+#
+# 1. Get a key at https://ollama.com/settings/keys (sign in first).
+# 2. Paste it on the empty line below, then save this file.
+# 3. Double-click the START file. ClaimComposer then uses Ollama Cloud and downloads no model.
+#
+# Lines starting with # are ignored. Keep this file private: do not send or upload it.
+

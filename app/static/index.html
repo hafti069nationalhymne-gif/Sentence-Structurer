@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ClaimComposer · The Composing Room</title>
+  <meta name="description" content="Recommends regulation-based environmental claims from a short questionnaire. Research prototype.">
+  <link rel="icon" href="/static/img/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/css/fonts.css">
+  <link rel="stylesheet" href="/static/css/app.css">
+  <script type="module" src="/static/js/app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#composer">Skip to the composing area</a>
+  <div class="paper" aria-hidden="true"></div>
+
+  <header class="masthead">
+    <div class="masthead__brand">
+      <span class="masthead__mark" aria-hidden="true">¶</span>
+      <h1 class="masthead__title">ClaimComposer</h1>
+      <span class="masthead__sub">The Composing Room</span>
+    </div>
+    <div class="masthead__tools">
+      <span id="mode-pill" class="pill" role="status" aria-live="polite">Checking the press…</span>
+      <button type="button" class="btn btn--ghost" id="btn-log" aria-controls="drawer-log" aria-expanded="false">Job log</button>
+      <button type="button" class="btn btn--ghost" id="btn-settings" aria-controls="drawer-settings" aria-expanded="false">Settings</button>
+    </div>
+  </header>
+
+  <main class="room">
+    <aside class="ticket" id="ticket" aria-label="Job ticket">
+      <div class="ticket__head">
+        <div class="ticket__label">Job ticket</div>
+        <div class="ticket__no" id="ticket-no">No. 0001</div>
+        <div class="ticket__actions">
+          <button type="button" class="btn btn--small" id="btn-new">Start a new ticket</button>
+          <button type="button" class="btn btn--small" id="btn-dup" disabled>Duplicate ticket</button>
+        </div>
+      </div>
+      <div class="perforation" aria-hidden="true"></div>
+      <ol class="ticket__fields" id="ticket-fields"></ol>
+      <div class="perforation" aria-hidden="true"></div>
+      <p class="ticket__foot">Arrow keys move through choices · Enter confirms · Backspace goes back</p>
+    </aside>
+
+    <section class="composer" id="composer" aria-label="Composing area" tabindex="-1">
+      <div class="typecase" aria-label="Regulations selected so far">
+        <div class="typecase__label">Type case <span class="typecase__count" id="typecase-count">0 rules</span></div>
+        <ul class="typecase__slugs" id="typecase" aria-live="polite"></ul>
+        <ul class="typecase__legend" aria-hidden="true">
+          <li><span class="slug slug--prohibited">P</span> prohibited</li>
+          <li><span class="slug slug--case_by_case">C</span> case by case</li>
+          <li><span class="slug slug--evidence">E</span> evidence</li>
+          <li><span class="slug slug--info">i</span> info / gate</li>
+        </ul>
+      </div>
+      <div id="stage" class="stage" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <div class="drawer" id="drawer-log" role="dialog" aria-modal="false" aria-labelledby="drawer-log-title" hidden>
+    <div class="drawer__head">
+      <h2 id="drawer-log-title">Job log</h2>
+      <button type="button" class="btn btn--ghost" data-close>Close</button>
+    </div>
+    <div class="drawer__tools">
+      <span class="mono-label">Export the full log</span>
+      <a class="btn btn--small" id="exp-json" href="/api/export?format=json">JSON</a>
+      <a class="btn btn--small" id="exp-csv" href="/api/export?format=csv">CSV</a>
+      <a class="btn btn--small" id="exp-md" href="/api/export?format=md">Markdown</a>
+    </div>
+    <ol class="joblog" id="joblog"></ol>
+  </div>
+
+  <div class="drawer" id="drawer-settings" role="dialog" aria-modal="false" aria-labelledby="drawer-settings-title" hidden>
+    <div class="drawer__head">
+      <h2 id="drawer-settings-title">Settings</h2>
+      <button type="button" class="btn btn--ghost" data-close>Close</button>
+    </div>
+    <form class="settings" id="settings-form">
+      <fieldset>
+        <legend>AI (optional)</legend>
+        <label class="check"><input type="checkbox" name="ollama_enabled"> Use AI for tone, translation and explanations</label>
+        <div class="row" role="radiogroup" aria-label="Where the AI runs">
+          <label class="check"><input type="radio" name="ai_source" value="local"> On this computer (Ollama)</label>
+          <label class="check"><input type="radio" name="ai_source" value="cloud"> Ollama Cloud (API key, no download)</label>
+        </div>
+        <label class="field" id="field-local-model">Local model
+          <input type="text" name="chat_model" pattern="[A-Za-z0-9._:/\-]+" maxlength="64" list="model-list" autocomplete="off">
+        </label>
+        <label class="field" id="field-cloud-model">Cloud model
+          <input type="text" name="cloud_model" pattern="[A-Za-z0-9._:/\-]+" maxlength="64" list="model-list" autocomplete="off">
+        </label>
+        <datalist id="model-list"></datalist>
+        <div class="field" id="field-key">Ollama Cloud API key
+          <div class="row">
+            <input type="password" id="api-key" autocomplete="off" spellcheck="false" maxlength="200" placeholder="Paste a new key" aria-describedby="key-state">
+            <button type="button" class="btn btn--small" id="btn-key-save">Save key</button>
+            <button type="button" class="btn btn--small" id="btn-key-remove">Remove key</button>
+          </div>
+          <span class="hint" id="key-state" role="status"></span>
+        </div>
+        <p class="hint" id="cloud-note">With Ollama Cloud, the sentences and the rule texts are sent to ollama.com. Reviewer comments and your other answers are never sent. The key is stored only on this computer.</p>
+        <p class="hint" id="ai-hint"></p>
+      </fieldset>
+      <fieldset>
+        <legend>Evaluation</legend>
+        <label class="check"><input type="checkbox" name="review_mode"> Review mode: rate each proof</label>
+        <label class="check"><input type="checkbox" name="usability_mode"> Usability mode: record timings and ask the SUS questions</label>
+        <div class="row">
+          <a class="btn btn--small" href="/api/export/usability.csv">Export usability CSV</a>
+          <button type="button" class="btn btn--small" id="btn-sus">Finish session (SUS)</button>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Local data</legend>
+        <p class="hint">Tickets, results, reviews and usability data are stored only on this computer.</p>
+        <button type="button" class="btn btn--danger" id="btn-clear">Clear local data</button>
+        <div class="confirm" id="clear-confirm" hidden>
+          <p>This deletes every ticket, result, review and usability record on this computer. It cannot be undone.</p>
+          <div class="row">
+            <button type="button" class="btn btn--small" id="btn-clear-cancel">Keep my data</button>
+            <button type="button" class="btn btn--danger" id="btn-clear-yes">Delete everything</button>
+          </div>
+        </div>
+      </fieldset>
+      <p class="hint mono-label" id="hashes"></p>
+    </form>
+  </div>
+
+  <div class="modal" id="modal-sus" role="dialog" aria-modal="true" aria-labelledby="sus-title" hidden>
+    <form class="modal__card" id="sus-form">
+      <h2 id="sus-title">How was it to use?</h2>
+      <p class="hint">System Usability Scale. 1 = strongly disagree, 5 = strongly agree.</p>
+      <ol class="sus" id="sus-items"></ol>
+      <div class="row">
+        <button type="button" class="btn btn--ghost" data-close>Cancel</button>
+        <button type="submit" class="btn">Submit</button>
+      </div>
+      <p class="hint" id="sus-result" role="status"></p>
+    </form>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

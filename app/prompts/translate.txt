@@ -1,0 +1,11 @@
+Translate the sentence from English into German for use on product communication in Germany.
+Rules:
+- Keep every number, unit and placeholder in square brackets exactly as written (do not translate the names inside brackets).
+- Keep legal references (for example "Regulation (EU) 2025/40" becomes "Verordnung (EU) 2025/40") and standard names (ISO, EN) exact.
+- Translate qualifiers faithfully: "not included" -> "nicht eingeschlossen", "does not reduce" -> "verringert ... nicht", "where available" -> "sofern vorhanden".
+- Do not add any environmental adjective or benefit, and never use: umweltfreundlich, nachhaltig, klimaneutral, grün, öko, natürlich.
+- Do not use "ohne", "frei von" or words ending in "-frei".
+{feedback}
+<data>
+{sentence}
+</data>

@@ -1,0 +1,11 @@
+Rewrite the sentence in a {tone_description} tone, in {language_name}.
+Rules:
+- Keep every number, unit and placeholder in square brackets exactly as written.
+- Keep these protected phrases word for word: {protected}
+- Do not add any environmental adjective or benefit (for example sustainable, green, eco, natural, clean, friendly).
+- Do not add numbers, standards, certificates, labels or claims.
+- Do not remove any qualifier or scope statement.
+{feedback}
+<data>
+{sentence}
+</data>

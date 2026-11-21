@@ -1,0 +1,14 @@
+﻿claim_object,rule_ids,use
+packaging,PK01; PK02; PK03; PK04; PK05,"Add when the claim is about packaging, whatever the ECLASS segment"
+durability_guarantee,DU01,Add when the offer includes a commercial guarantee of durability
+repair,DU02,Add when the claim is about repair
+eco_label,LB01; LB02,Add when the claim or artwork mentions the EU Ecolabel or a similar label
+emas,EM01; EM02; EM03; EM04,Add when the claim mentions EMAS
+footprint_study,FP01; FP02,Add when the claim relies on a PEF or OEF study or compares footprints
+recyclability,FP03,Add when the claim says that something is recyclable
+recycled_content,FP04,Add when the claim states recycled content
+renewable_electricity,FP05,Add when the company claims to use renewable electricity
+carbon_removal,CR01; CR02; CR03,"Add when the claim mentions carbon removal, carbon storage or certified units, or a product climate claim relies on them"
+taxonomy,RP01; RP02; RP03,Add when the claim mentions the EU Taxonomy or green revenue or investment shares
+reporting_status,RP04; RP05,"Add when the claim mentions CSRD, ESRS or the audit of a sustainability report"
+company_climate,RP06; RP07; RP08; RP09,"Add when a company states climate targets, neutrality or emission reductions"
